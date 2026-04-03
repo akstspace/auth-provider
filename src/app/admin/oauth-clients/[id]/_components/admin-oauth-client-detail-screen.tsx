@@ -1,0 +1,436 @@
+"use client"
+
+import { useEffect, useState, use } from "react"
+import { useRouter } from "next/navigation"
+import {
+    KeyRound,
+    Copy,
+    Check,
+    Trash2,
+    RefreshCw,
+    Globe,
+    AlertTriangle,
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import { AdminPageHeader, AdminStatusBadge } from "@/components/admin/admin-shell"
+import { authClient } from "@/lib/auth-client"
+
+interface OAuthClientDetail {
+    clientId: string
+    name?: string | null
+    uri?: string | null
+    icon?: string | null
+    public?: boolean | null
+    disabled?: boolean | null
+    skipConsent?: boolean | null
+    enableEndSession?: boolean | null
+    scopes?: string[] | null
+    redirectUris?: string[] | null
+    grantTypes?: string[] | null
+    tokenEndpointAuthMethod?: string | null
+    createdAt?: string | Date | null
+    updatedAt?: string | Date | null
+}
+
+const normalizeOAuthClientDetail = (value: Record<string, unknown>): OAuthClientDetail => {
+    const issuedAt = value.client_id_issued_at
+
+    return {
+        clientId: (value.clientId as string) ?? (value.client_id as string) ?? "",
+        name: (value.name as string | null) ?? (value.client_name as string | null) ?? null,
+        uri: (value.uri as string | null) ?? (value.client_uri as string | null) ?? null,
+        icon: (value.icon as string | null) ?? (value.logo_uri as string | null) ?? null,
+        public: (value.public as boolean | null) ?? null,
+        disabled: (value.disabled as boolean | null) ?? null,
+        skipConsent:
+            (value.skipConsent as boolean | null) ?? (value.skip_consent as boolean | null) ?? null,
+        enableEndSession:
+            (value.enableEndSession as boolean | null) ??
+            (value.enable_end_session as boolean | null) ??
+            null,
+        scopes:
+            (value.scopes as string[] | null) ??
+            (typeof value.scope === "string" ? (value.scope as string).split(" ").filter(Boolean) : null),
+        redirectUris:
+            (value.redirectUris as string[] | null) ??
+            (value.redirect_uris as string[] | null) ??
+            null,
+        grantTypes:
+            (value.grantTypes as string[] | null) ?? (value.grant_types as string[] | null) ?? null,
+        tokenEndpointAuthMethod:
+            (value.tokenEndpointAuthMethod as string | null) ??
+            (value.token_endpoint_auth_method as string | null) ??
+            null,
+        createdAt:
+            (value.createdAt as string | Date | null) ??
+            (typeof issuedAt === "number" ? new Date(issuedAt * 1000) : null),
+        updatedAt: (value.updatedAt as string | Date | null) ?? null,
+    }
+}
+
+const formatDate = (value: string | Date | null | undefined) => {
+    if (!value) return "—"
+    const d = typeof value === "string" ? new Date(value) : value
+    return d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    })
+}
+
+export function AdminOAuthClientDetailScreen({
+    params,
+}: {
+    params: Promise<{ id: string }>
+}) {
+    const { id: clientId } = use(params)
+    const router = useRouter()
+
+    const [client, setClient] = useState<OAuthClientDetail | null>(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState("")
+    const [deleting, setDeleting] = useState(false)
+    const [rotating, setRotating] = useState(false)
+
+    // Rotated secret dialog
+    const [showRotatedSecret, setShowRotatedSecret] = useState(false)
+    const [rotatedSecret, setRotatedSecret] = useState("")
+    const [copiedSecret, setCopiedSecret] = useState(false)
+
+    useEffect(() => {
+        const fetchClient = async () => {
+            try {
+                const result = await authClient.oauth2.getClient({
+                    query: { client_id: clientId },
+                })
+                if (result.error) {
+                    setError("Failed to load client details.")
+                } else if (result.data) {
+                    setClient(normalizeOAuthClientDetail(result.data as Record<string, unknown>))
+                }
+            } catch {
+                setError("Failed to load client details.")
+            } finally {
+                setLoading(false)
+            }
+        }
+        void fetchClient()
+    }, [clientId])
+
+    const handleDelete = async () => {
+        setDeleting(true)
+        try {
+            const result = await authClient.oauth2.deleteClient({
+                client_id: clientId,
+            })
+            if (result.error) {
+                setError("Failed to delete client.")
+                setDeleting(false)
+            } else {
+                router.push("/admin/oauth-clients")
+            }
+        } catch {
+            setError("Failed to delete client.")
+            setDeleting(false)
+        }
+    }
+
+    const handleRotateSecret = async () => {
+        setRotating(true)
+        try {
+            const result = await authClient.oauth2.client.rotateSecret({
+                client_id: clientId,
+            })
+            if (result.error) {
+                setError("Failed to rotate secret.")
+            } else {
+                const data = result.data as Record<string, unknown>
+                const newSecret = (data?.client_secret as string) ?? (data?.clientSecret as string) ?? ""
+                setRotatedSecret(newSecret)
+                setShowRotatedSecret(true)
+            }
+        } catch {
+            setError("Failed to rotate secret.")
+        } finally {
+            setRotating(false)
+        }
+    }
+
+    const copySecret = async () => {
+        await navigator.clipboard.writeText(rotatedSecret)
+        setCopiedSecret(true)
+        setTimeout(() => setCopiedSecret(false), 2000)
+    }
+
+    if (loading) {
+        return (
+            <div className="space-y-8">
+                <AdminPageHeader
+                    title="OAuth client"
+                    description="Loading client details…"
+                />
+                <Card className="border-border/50 bg-card xl:max-w-4xl">
+                    <CardContent className="space-y-4 p-6">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <Skeleton key={i} className="h-6 w-full" />
+                        ))}
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
+
+    if (!client) {
+        return (
+            <div className="space-y-8">
+                <AdminPageHeader
+                    title="OAuth client"
+                    description="Client not found."
+                />
+                {error ? (
+                    <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                        {error}
+                    </div>
+                ) : null}
+            </div>
+        )
+    }
+
+    return (
+        <div className="space-y-8">
+            <AdminPageHeader
+                title={client.name ?? "Unnamed client"}
+                description={`Client ID: ${client.clientId}`}
+            />
+
+            {error ? (
+                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                    {error}
+                </div>
+            ) : null}
+
+            {/* Client info */}
+            <Card className="border-border/50 bg-card xl:max-w-4xl">
+                <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-1">
+                        <CardTitle className="text-lg font-medium">Client details</CardTitle>
+                        <CardDescription className="text-sm text-pretty">
+                            Configuration and metadata for this OAuth client.
+                        </CardDescription>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-start gap-3 sm:justify-end">
+                        {!client.public ? (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => void handleRotateSecret()}
+                                disabled={rotating}
+                                className="gap-2"
+                            >
+                                <RefreshCw className={`size-4 ${rotating ? "animate-spin" : ""}`} />
+                                {rotating ? "Rotating…" : "Rotate client secret"}
+                            </Button>
+                        ) : null}
+
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-2 text-destructive hover:text-destructive"
+                                    disabled={deleting}
+                                >
+                                    <Trash2 className="size-4" />
+                                    {deleting ? "Deleting…" : "Delete client"}
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete OAuth client?</AlertDialogTitle>
+                                    <AlertDialogDescription className="text-pretty">
+                                        This will permanently revoke all tokens issued to this client and remove
+                                        it. This action cannot be undone.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={() => void handleDelete()}
+                                        className="bg-destructive text-white hover:bg-destructive/90"
+                                    >
+                                        Delete
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground">Client ID</p>
+                            <p className="text-sm font-mono truncate">{client.clientId}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground">Type</p>
+                            <div>
+                                <AdminStatusBadge
+                                    label={client.public ? "Public" : "Confidential"}
+                                    tone={client.public ? "warning" : "default"}
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground">Status</p>
+                            <div>
+                                {client.disabled ? (
+                                    <AdminStatusBadge label="Disabled" tone="danger" />
+                                ) : (
+                                    <AdminStatusBadge label="Active" tone="success" />
+                                )}
+                            </div>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground">Auth method</p>
+                            <p className="text-sm">{client.tokenEndpointAuthMethod ?? "client_secret_post"}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground">Created</p>
+                            <p className="text-sm tabular-nums">{formatDate(client.createdAt)}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground">Updated</p>
+                            <p className="text-sm tabular-nums">{formatDate(client.updatedAt)}</p>
+                        </div>
+                    </div>
+
+                    {/* URI */}
+                    {client.uri ? (
+                        <div className="space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground">Website</p>
+                            <div className="flex items-center gap-1.5 text-sm">
+                                <Globe className="size-3.5 text-muted-foreground" />
+                                <a
+                                    href={client.uri}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="hover:underline"
+                                >
+                                    {client.uri}
+                                </a>
+                            </div>
+                        </div>
+                    ) : null}
+
+                    {/* Scopes */}
+                    {client.scopes && client.scopes.length > 0 ? (
+                        <div className="space-y-1.5">
+                            <p className="text-xs font-medium text-muted-foreground">Scopes</p>
+                            <div className="flex flex-wrap gap-1.5">
+                                {client.scopes.map((scope) => (
+                                    <Badge
+                                        key={scope}
+                                        variant="outline"
+                                        className="font-mono text-[11px] border-border/60"
+                                    >
+                                        {scope}
+                                    </Badge>
+                                ))}
+                            </div>
+                        </div>
+                    ) : null}
+
+                    {/* Redirect URIs */}
+                    {client.redirectUris && client.redirectUris.length > 0 ? (
+                        <div className="space-y-1.5">
+                            <p className="text-xs font-medium text-muted-foreground">Redirect URIs</p>
+                            <div className="space-y-1">
+                                {client.redirectUris.map((uri) => (
+                                    <p key={uri} className="text-sm font-mono truncate text-muted-foreground">
+                                        {uri}
+                                    </p>
+                                ))}
+                            </div>
+                        </div>
+                    ) : null}
+
+                    {/* Trust flags */}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                        {client.skipConsent ? (
+                            <AdminStatusBadge label="Skip consent" tone="warning" />
+                        ) : null}
+                        {client.enableEndSession ? (
+                            <AdminStatusBadge label="End session enabled" />
+                        ) : null}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Rotated secret dialog */}
+            <Dialog open={showRotatedSecret} onOpenChange={() => { /* prevent close */ }}>
+                <DialogContent className="sm:max-w-lg" onPointerDownOutside={(e) => e.preventDefault()}>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <AlertTriangle className="size-4 text-amber-500" />
+                            New client secret
+                        </DialogTitle>
+                        <DialogDescription className="text-pretty">
+                            The previous secret has been invalidated. Copy this new secret — it will not be shown again.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="pt-2">
+                        <div className="flex items-center gap-2">
+                            <code className="flex-1 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-sm font-mono truncate">
+                                {rotatedSecret}
+                            </code>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => void copySecret()}
+                                aria-label="Copy new client secret"
+                            >
+                                {copiedSecret ? (
+                                    <Check className="size-3.5 text-emerald-500" />
+                                ) : (
+                                    <Copy className="size-3.5" />
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                    <DialogFooter className="pt-2">
+                        <Button type="button" onClick={() => setShowRotatedSecret(false)}>
+                            Done
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div>
+    )
+}
