@@ -1,6 +1,11 @@
+import "server-only";
+
 import { betterAuth } from "better-auth";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/db";
+import { session as authSession } from "@/db/auth-schema";
+import { eq } from "drizzle-orm";
 import {
   jwt,
   lastLoginMethod,
@@ -19,11 +24,16 @@ import {
 } from "@/lib/email";
 import { appName } from "@/lib/app-config";
 import {
-  BUILTIN_SELF_SERVICE_SCOPE_KEYS,
   getOAuthProviderScopeConfig,
 } from "@/lib/oauth-scope-store";
+import {
+  isEmailPasswordAuthEnabled,
+  isDynamicClientRegistrationEnabled,
+  isUserClientCreationAllowed,
+  validateInviteOnlyEmail,
+} from "@/lib/invite-only";
 
-const authBaseUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+const authBaseUrl = process.env.BETTER_AUTH_URL;
 const oauthValidAudiences = process.env.OAUTH_VALID_AUDIENCES
   ?.split(",")
   .map((value) => value.trim())
@@ -32,8 +42,6 @@ const oauthTrustedClientIds = process.env.OAUTH_TRUSTED_CLIENT_IDS
   ?.split(",")
   .map((value) => value.trim())
   .filter(Boolean);
-const allowDynamicClientRegistration =
-  process.env.OAUTH_ALLOW_DYNAMIC_CLIENT_REGISTRATION === "true";
 const maximumBrowserSessions = Number(
   process.env.AUTH_MAX_BROWSER_SESSIONS ?? "5",
 );
@@ -44,15 +52,76 @@ const enablePwnedPasswordChecks =
 const captchaSecretKey = process.env.TURNSTILE_SECRET_KEY;
 const oauthScopeConfig = await getOAuthProviderScopeConfig();
 const oauthScopes = oauthScopeConfig.allScopeKeys;
-const dynamicRegistrationAllowedScopes =
-  oauthScopeConfig.selfServiceScopeKeys.filter(
-    (scope) => !BUILTIN_SELF_SERVICE_SCOPE_KEYS.includes(scope),
-  );
+// All self-service scopes (built-in + custom) available at startup.
+// Used for both defaults and allowed scopes in dynamic client registration.
+const selfServiceScopeKeys = oauthScopeConfig.selfServiceScopeKeys;
+// Read at startup — like oauthScopeConfig. Changes take effect after a server restart.
+const dynamicClientRegistrationEnabled = await isDynamicClientRegistrationEnabled();
+const EMAIL_PASSWORD_AUTH_DISABLED_MESSAGE =
+  "Email/password authentication is currently disabled by an administrator.";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
+
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          const email = typeof user.email === "string" ? user.email : null;
+          if (!email) {
+            return;
+          }
+
+          const validation = await validateInviteOnlyEmail(email);
+          if (!validation.allowed) {
+            throw new APIError("FORBIDDEN", {
+              message: validation.message,
+            });
+          }
+        },
+      },
+    },
+  },
+
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      const emailPasswordAuthEnabled = await isEmailPasswordAuthEnabled();
+      if (!emailPasswordAuthEnabled) {
+        const disabledPaths = new Set([
+          "/sign-in/email",
+          "/sign-up/email",
+          "/request-password-reset",
+          "/reset-password",
+        ]);
+
+        if (disabledPaths.has(ctx.path)) {
+          throw new APIError("FORBIDDEN", {
+            message: EMAIL_PASSWORD_AUTH_DISABLED_MESSAGE,
+          });
+        }
+      }
+
+      if (ctx.path !== "/sign-up/email") {
+        return;
+      }
+
+      const email =
+        typeof ctx.body?.email === "string" ? ctx.body.email : null;
+
+      if (!email) {
+        return;
+      }
+
+      const validation = await validateInviteOnlyEmail(email);
+      if (!validation.allowed) {
+        throw new APIError("FORBIDDEN", {
+          message: validation.message,
+        });
+      }
+    }),
+  },
 
   // Prevent conflict with the OAuth provider's /token endpoint
   disabledPaths: ["/token"],
@@ -63,6 +132,7 @@ export const auth = betterAuth({
 
   // ── Account Linking ───────────────────────────────────────────
   account: {
+    encryptOAuthTokens: true,
     accountLinking: {
       enabled: true,
       trustedProviders: ["google"],
@@ -110,19 +180,22 @@ export const auth = betterAuth({
       },
     }),
 
-    haveIBeenPwned({
-      enabled: enablePwnedPasswordChecks,
-      customPasswordCompromisedMessage:
-        "This password appears in a known breach. Please choose a different one.",
-    }),
+    ...(enablePwnedPasswordChecks
+      ? [
+        haveIBeenPwned({
+          customPasswordCompromisedMessage:
+            "This password appears in a known breach. Please choose a different one.",
+        }),
+      ]
+      : []),
 
     ...(captchaSecretKey
       ? [
-          captcha({
-            provider: "cloudflare-turnstile",
-            secretKey: captchaSecretKey,
-          }),
-        ]
+        captcha({
+          provider: "cloudflare-turnstile",
+          secretKey: captchaSecretKey,
+        }),
+      ]
       : []),
 
     admin({
@@ -135,9 +208,9 @@ export const auth = betterAuth({
       loginPage: "/login",
       selectAccount: {
         page: "/select-account",
-        shouldRedirect: async ({ headers }) => {
-          const allSessions = await auth.api.listDeviceSessions({
-            headers,
+        shouldRedirect: async ({ user }) => {
+          const allSessions = await db.query.session.findMany({
+            where: eq(authSession.userId, user.id),
           });
           return allSessions.length > 1;
         },
@@ -163,16 +236,15 @@ export const auth = betterAuth({
           ? new Set(oauthTrustedClientIds)
           : undefined,
       pairwiseSecret: process.env.OAUTH_PAIRWISE_SUBJECT_SECRET,
-      allowDynamicClientRegistration,
-      clientRegistrationDefaultScopes: allowDynamicClientRegistration
-        ? [...BUILTIN_SELF_SERVICE_SCOPE_KEYS]
-        : undefined,
-      clientRegistrationAllowedScopes: allowDynamicClientRegistration
-        ? dynamicRegistrationAllowedScopes
-        : undefined,
-      clientRegistrationClientSecretExpiration: allowDynamicClientRegistration
-        ? "30d"
-        : undefined,
+      // Both read from DB at startup — changes take effect after a server restart.
+      allowDynamicClientRegistration: dynamicClientRegistrationEnabled,
+      allowUnauthenticatedClientRegistration: dynamicClientRegistrationEnabled,
+      silenceWarnings: {
+        oauthAuthServerConfig: true,
+      },
+      clientRegistrationDefaultScopes: selfServiceScopeKeys,
+      clientRegistrationAllowedScopes: selfServiceScopeKeys,
+      clientRegistrationClientSecretExpiration: "30d",
 
       // Per-endpoint rate limits
       rateLimit: {
@@ -182,6 +254,16 @@ export const auth = betterAuth({
         revoke: { window: 60, max: 30 },
         register: { window: 60, max: 5 },
         userinfo: { window: 60, max: 60 },
+      },
+
+      clientPrivileges: async ({ action, user }) => {
+        if (action === "create") {
+          const isAllowedLocal = await isUserClientCreationAllowed();
+          if (!isAllowedLocal && user?.role !== "admin") {
+            return false;
+          }
+        }
+        return true; // allow all other actions (list, read, update, delete, rotate)
       },
     }),
   ],
@@ -196,6 +278,7 @@ export const auth = betterAuth({
       "/sign-in/passkey": { window: 60, max: 20 },
       "/sign-in/email": { window: 60, max: 20 },
       "/sign-up/email": { window: 60, max: 12 },
+      "/send-verification-email": { window: 300, max: 4 },
       "/two-factor/send-otp": { window: 300, max: 10 },
       "/two-factor/verify-totp": { window: 60, max: 20 },
       "/two-factor/verify-otp": { window: 60, max: 20 },

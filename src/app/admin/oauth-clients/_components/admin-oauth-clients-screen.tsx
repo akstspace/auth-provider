@@ -5,8 +5,10 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { KeyRound, Plus, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { AdminPageHeader, AdminStatusBadge } from "@/components/admin/admin-shell"
+import {
+    AdminPageHeader,
+    AdminStatusBadge,
+} from "@/components/admin/admin-shell"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
     Table,
@@ -112,12 +114,12 @@ export function AdminOAuthClientsScreen() {
             />
 
             {error ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {error}
                 </div>
             ) : null}
 
-            <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
+            <div className="rounded-lg border border-[color:var(--warning)]/25 bg-[var(--warning-soft)] px-4 py-3 text-sm text-[color:var(--warning)]">
                 <p className="font-medium">Ownership visibility note</p>
                 <p className="mt-1 text-pretty">
                     This page shows the OAuth clients owned by the currently signed-in admin account.
@@ -126,15 +128,15 @@ export function AdminOAuthClientsScreen() {
                 </p>
             </div>
 
-            <Card className="border-border/50 bg-card">
-                <CardHeader>
-                    <CardTitle className="text-lg font-medium">Registered clients</CardTitle>
-                    <CardDescription className="text-sm leading-6 text-pretty">
+            <div className="space-y-6 pt-4">
+                <div className="mb-4">
+                    <h2 className="text-lg font-medium text-foreground">Registered clients</h2>
+                    <p className="text-sm leading-6 text-muted-foreground text-pretty mt-1">
                         Manage registered OAuth 2.1 clients that can authenticate against this server.
                         Each client represents an application that can request OAuth authorization.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
+                    </p>
+                </div>
+                <div className="space-y-4">
                     {loading ? (
                         <>
                             <div className="hidden space-y-2 md:block">
@@ -144,14 +146,17 @@ export function AdminOAuthClientsScreen() {
                             </div>
                             <div className="space-y-3 md:hidden">
                                 {Array.from({ length: 3 }).map((_, index) => (
-                                    <Skeleton key={index} className="h-24 w-full rounded-xl" />
+                                    <Skeleton key={index} className="h-24 w-full rounded-lg" />
                                 ))}
                             </div>
                         </>
                     ) : clients.length === 0 ? (
-                        <div className="rounded-xl border border-dashed border-border/70 bg-muted/20 p-8 text-center">
-                            <KeyRound className="mx-auto size-8 text-muted-foreground/60 mb-3" />
-                            <p className="text-sm text-muted-foreground mb-4">No OAuth clients registered yet.</p>
+                        <div className="rounded-lg border bg-muted/30 p-12 text-center text-sm text-muted-foreground">
+                            <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-md bg-[var(--icon-soft)]">
+                                <KeyRound className="size-6 text-muted-foreground" />
+                            </div>
+                            <p className="font-medium text-foreground text-base">No OAuth clients registered yet</p>
+                            <p className="mt-1 mb-6 text-muted-foreground">Get started by building an application integration.</p>
                             <Button asChild size="sm">
                                 <Link href="/admin/oauth-clients/new">
                                     <Plus className="size-4 mr-1.5" />
@@ -163,7 +168,7 @@ export function AdminOAuthClientsScreen() {
                         <>
                             {/* Desktop table */}
                             <div className="hidden md:block">
-                                <div className="overflow-hidden rounded-xl border border-border/60">
+                                <div className="overflow-hidden rounded-lg border">
                                     <Table className="min-w-[620px]">
                                         <TableHeader>
                                             <TableRow>
@@ -229,7 +234,7 @@ export function AdminOAuthClientsScreen() {
                             {/* Mobile cards */}
                             <div className="space-y-3 md:hidden">
                                 {clients.map((client) => (
-                                    <div key={client.clientId} className="rounded-xl border border-border/60 p-4">
+                                    <div key={client.clientId} className="rounded-lg border bg-background p-4">
                                         <Link
                                             href={`/admin/oauth-clients/${client.clientId}`}
                                             className="block font-medium text-foreground hover:underline"
@@ -258,8 +263,8 @@ export function AdminOAuthClientsScreen() {
                             </div>
                         </>
                     )}
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         </div>
     )
 }

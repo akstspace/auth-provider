@@ -10,9 +10,12 @@ import {
     RefreshCw,
     Globe,
     AlertTriangle,
+    Settings2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { CardDescription, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -34,7 +37,13 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import { AdminPageHeader, AdminStatusBadge } from "@/components/admin/admin-shell"
+import {
+    AdminPageHeader,
+    AdminSectionCard,
+    AdminSectionContent,
+    AdminSectionHeader,
+    AdminStatusBadge,
+} from "@/components/admin/admin-shell"
 import { authClient } from "@/lib/auth-client"
 
 interface OAuthClientDetail {
@@ -121,6 +130,14 @@ export function AdminOAuthClientDetailScreen({
     const [rotatedSecret, setRotatedSecret] = useState("")
     const [copiedSecret, setCopiedSecret] = useState(false)
 
+    // Edit client dialog
+    const [showEditClient, setShowEditClient] = useState(false)
+    const [editing, setEditing] = useState(false)
+    const [editName, setEditName] = useState("")
+    const [editRedirectUris, setEditRedirectUris] = useState("")
+    const [editSkipConsent, setEditSkipConsent] = useState(false)
+    const [editEnableEndSession, setEditEnableEndSession] = useState(false)
+
     useEffect(() => {
         const fetchClient = async () => {
             try {
@@ -186,6 +203,45 @@ export function AdminOAuthClientDetailScreen({
         setTimeout(() => setCopiedSecret(false), 2000)
     }
 
+    const openEdit = () => {
+        setEditName(client?.name || "")
+        setEditRedirectUris(client?.redirectUris?.join('\n') || "")
+        setEditSkipConsent(client?.skipConsent || false)
+        setEditEnableEndSession(client?.enableEndSession || false)
+        setShowEditClient(true)
+    }
+
+    const handleEditClient = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setEditing(true)
+        setError("")
+        try {
+            const uris = editRedirectUris.split("\n").map(u => u.trim()).filter(Boolean)
+            const result = await fetch(`/api/admin/oauth-clients/${clientId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    client_name: editName,
+                    redirect_uris: uris,
+                    skip_consent: editSkipConsent,
+                    enable_end_session: editEnableEndSession,
+                })
+            })
+            if (!result.ok) {
+                const data = await result.json()
+                setError(data.error || "Failed to update client")
+            } else {
+                const data = await result.json()
+                setClient(normalizeOAuthClientDetail(data as Record<string, unknown>))
+                setShowEditClient(false)
+            }
+        } catch {
+            setError("Failed to update client")
+        } finally {
+            setEditing(false)
+        }
+    }
+
     if (loading) {
         return (
             <div className="space-y-8">
@@ -193,13 +249,13 @@ export function AdminOAuthClientDetailScreen({
                     title="OAuth client"
                     description="Loading client details…"
                 />
-                <Card className="border-border/50 bg-card xl:max-w-4xl">
-                    <CardContent className="space-y-4 p-6">
+                <AdminSectionCard className="xl:max-w-4xl">
+                    <AdminSectionContent className="space-y-4">
                         {Array.from({ length: 5 }).map((_, i) => (
                             <Skeleton key={i} className="h-6 w-full" />
                         ))}
-                    </CardContent>
-                </Card>
+                    </AdminSectionContent>
+                </AdminSectionCard>
             </div>
         )
     }
@@ -212,7 +268,7 @@ export function AdminOAuthClientDetailScreen({
                     description="Client not found."
                 />
                 {error ? (
-                    <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                    <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                         {error}
                     </div>
                 ) : null}
@@ -228,14 +284,14 @@ export function AdminOAuthClientDetailScreen({
             />
 
             {error ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {error}
                 </div>
             ) : null}
 
             {/* Client info */}
-            <Card className="border-border/50 bg-card xl:max-w-4xl">
-                <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <AdminSectionCard className="xl:max-w-4xl">
+                <AdminSectionHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="space-y-1">
                         <CardTitle className="text-lg font-medium">Client details</CardTitle>
                         <CardDescription className="text-sm text-pretty">
@@ -243,6 +299,17 @@ export function AdminOAuthClientDetailScreen({
                         </CardDescription>
                     </div>
                     <div className="flex flex-wrap items-center justify-start gap-3 sm:justify-end">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={openEdit}
+                            className="gap-2"
+                        >
+                            <Settings2 className="size-4" />
+                            Edit Configuration
+                        </Button>
+
                         {!client.public ? (
                             <Button
                                 type="button"
@@ -282,7 +349,7 @@ export function AdminOAuthClientDetailScreen({
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                                     <AlertDialogAction
                                         onClick={() => void handleDelete()}
-                                        className="bg-destructive text-white hover:bg-destructive/90"
+                                        className=""
                                     >
                                         Delete
                                     </AlertDialogAction>
@@ -290,8 +357,8 @@ export function AdminOAuthClientDetailScreen({
                             </AlertDialogContent>
                         </AlertDialog>
                     </div>
-                </CardHeader>
-                <CardContent className="space-y-5">
+                </AdminSectionHeader>
+                <AdminSectionContent className="space-y-5">
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-1">
                             <p className="text-xs font-medium text-muted-foreground">Client ID</p>
@@ -357,7 +424,7 @@ export function AdminOAuthClientDetailScreen({
                                     <Badge
                                         key={scope}
                                         variant="outline"
-                                        className="font-mono text-[11px] border-border/60"
+                                        className="border bg-muted font-mono text-[11px]"
                                     >
                                         {scope}
                                     </Badge>
@@ -389,15 +456,15 @@ export function AdminOAuthClientDetailScreen({
                             <AdminStatusBadge label="End session enabled" />
                         ) : null}
                     </div>
-                </CardContent>
-            </Card>
+                </AdminSectionContent>
+            </AdminSectionCard>
 
             {/* Rotated secret dialog */}
-            <Dialog open={showRotatedSecret} onOpenChange={() => { /* prevent close */ }}>
-                <DialogContent className="sm:max-w-lg" onPointerDownOutside={(e) => e.preventDefault()}>
+            <Dialog open={showRotatedSecret} onOpenChange={setShowRotatedSecret}>
+                <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <AlertTriangle className="size-4 text-amber-500" />
+                            <AlertTriangle className="size-4 text-[color:var(--warning)]" />
                             New client secret
                         </DialogTitle>
                         <DialogDescription className="text-pretty">
@@ -406,7 +473,7 @@ export function AdminOAuthClientDetailScreen({
                     </DialogHeader>
                     <div className="pt-2">
                         <div className="flex items-center gap-2">
-                            <code className="flex-1 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-sm font-mono truncate">
+                            <code className="flex-1 rounded-lg border bg-muted px-3 py-2 text-sm font-mono truncate">
                                 {rotatedSecret}
                             </code>
                             <Button
@@ -417,7 +484,7 @@ export function AdminOAuthClientDetailScreen({
                                 aria-label="Copy new client secret"
                             >
                                 {copiedSecret ? (
-                                    <Check className="size-3.5 text-emerald-500" />
+                                    <Check className="size-3.5 text-[color:var(--success)]" />
                                 ) : (
                                     <Copy className="size-3.5" />
                                 )}
@@ -429,6 +496,77 @@ export function AdminOAuthClientDetailScreen({
                             Done
                         </Button>
                     </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit client dialog */}
+            <Dialog open={showEditClient} onOpenChange={setShowEditClient}>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>Edit Client</DialogTitle>
+                        <DialogDescription>
+                            Update metadata and security settings.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleEditClient} className="space-y-4 pt-2">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Client name</label>
+                            <Input
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                placeholder="My Application"
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Redirect URIs</label>
+                            <Textarea
+                                value={editRedirectUris}
+                                onChange={(e) => setEditRedirectUris(e.target.value)}
+                                placeholder={"https://app.example.com/callback"}
+                                rows={4}
+                            />
+                            <p className="text-xs text-muted-foreground">One URI per line.</p>
+                        </div>
+                        <div className="space-y-3 pt-2">
+                            <label className="flex items-start gap-3 rounded-lg border bg-muted p-3 text-sm cursor-pointer hover:bg-accent transition-colors">
+                                <input
+                                    type="checkbox"
+                                    checked={editSkipConsent}
+                                    onChange={(e) => setEditSkipConsent(e.target.checked)}
+                                    className="mt-0.5 size-4"
+                                />
+                                <div>
+                                    <span className="font-medium">Skip consent</span>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                        Bypass the user authorization screen. Use only for fully trusted first-party apps.
+                                    </p>
+                                </div>
+                            </label>
+                            <label className="flex items-start gap-3 rounded-lg border bg-muted p-3 text-sm cursor-pointer hover:bg-accent transition-colors">
+                                <input
+                                    type="checkbox"
+                                    checked={editEnableEndSession}
+                                    onChange={(e) => setEditEnableEndSession(e.target.checked)}
+                                    className="mt-0.5 size-4"
+                                />
+                                <div>
+                                    <span className="font-medium">Enable end session logout</span>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                        Allow this client to terminate user sessions globally via the end session endpoint.
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
+                        <DialogFooter className="pt-2">
+                            <Button type="button" variant="outline" onClick={() => setShowEditClient(false)}>
+                                Cancel
+                            </Button>
+                            <Button type="submit" disabled={editing}>
+                                {editing ? "Saving…" : "Save changes"}
+                            </Button>
+                        </DialogFooter>
+                    </form>
                 </DialogContent>
             </Dialog>
         </div>

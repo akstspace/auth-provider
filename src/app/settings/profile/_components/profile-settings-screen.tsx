@@ -64,7 +64,7 @@ export function ProfileSettingsScreen() {
     return (
         <div className="max-w-2xl mx-auto space-y-8">
             <div>
-                <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
                     <User className="size-5" />
                     Profile
                 </h2>
@@ -73,9 +73,9 @@ export function ProfileSettingsScreen() {
                 </p>
             </div>
 
-            <div className="border border-border/50 rounded-lg p-6 bg-card text-card-foreground">
-                {error && <div className="text-sm text-destructive mb-4">{error}</div>}
-                {message && <div className="text-sm text-emerald-500 mb-4">{message}</div>}
+            <div className="rounded-lg border bg-card p-6 text-card-foreground">
+                {error && <div className="mb-4 rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-3 py-2 text-sm text-destructive">{error}</div>}
+                {message && <div className="mb-4 rounded-lg border border-[color:var(--success)]/25 bg-[var(--success-soft)] px-3 py-2 text-sm text-[color:var(--success)]">{message}</div>}
 
                 <form onSubmit={handleSubmit} className="space-y-4 max-w-sm">
                     <div className="space-y-2">

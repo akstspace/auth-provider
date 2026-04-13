@@ -2,7 +2,7 @@
 
 import { useTheme } from "next-themes"
 import { useSyncExternalStore } from "react"
-import { Sun, Moon, Monitor } from "lucide-react"
+import { Coffee, Monitor, Moon, Sun } from "lucide-react"
 
 export function ThemeToggle() {
     const { theme, setTheme } = useTheme()
@@ -17,17 +17,18 @@ export function ThemeToggle() {
     const options = [
         { value: "light", icon: Sun, label: "Light mode" },
         { value: "dark", icon: Moon, label: "Dark mode" },
+        { value: "chai", icon: Coffee, label: "Chai mode" },
         { value: "system", icon: Monitor, label: "System preference" },
     ] as const
 
     return (
-        <div className="flex items-center gap-1 rounded-full border border-border/50 bg-muted/50 p-1 backdrop-blur-sm">
+        <div className="flex items-center gap-1 rounded-md border bg-muted p-1">
             {options.map(({ value, icon: Icon, label }) => (
                 <button
                     key={value}
                     onClick={() => setTheme(value)}
                     aria-label={label}
-                    className={`rounded-full p-1.5 transition-colors ${theme === value
+                    className={`rounded-md p-1.5 transition-colors ${theme === value
                             ? "bg-background text-foreground shadow-sm"
                             : "text-muted-foreground hover:text-foreground"
                         }`}

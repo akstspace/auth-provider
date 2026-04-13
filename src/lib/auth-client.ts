@@ -9,9 +9,13 @@ import { getAuthErrorMessage } from "@/lib/auth-error";
 import { getOAuthFlowQuery, withAuthFlow } from "@/lib/auth-flow";
 import { adminClient } from "better-auth/client/plugins";
 
+const authClientBaseUrl = process.env.NEXT_PUBLIC_BETTER_AUTH_URL;
+if (!authClientBaseUrl) {
+  throw new Error("NEXT_PUBLIC_BETTER_AUTH_URL is required.");
+}
+
 export const authClient = createAuthClient({
-  baseURL:
-    process.env.NEXT_PUBLIC_BETTER_AUTH_URL ?? "http://localhost:3000",
+  baseURL: authClientBaseUrl,
   plugins: [
     jwtClient(),
     passkeyClient(),

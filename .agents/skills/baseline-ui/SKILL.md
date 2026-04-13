@@ -20,7 +20,8 @@ Enforces an opinionated UI baseline to prevent AI-generated interface slop.
 
 ## Stack
 
-- MUST use Tailwind CSS defaults unless custom values already exist or are explicitly requested
+- MUST treat `DESIGN.md` in the repo root as the visual source of truth when it exists
+- MUST prefer project design tokens from `DESIGN.md` over generic Tailwind defaults
 - MUST use `motion/react` (formerly `framer-motion`) when JavaScript animation is required
 - SHOULD use `tw-animate-css` for entrance and micro-animations in Tailwind CSS
 - MUST use `cn` utility (`clsx` + `tailwind-merge`) for class logic
@@ -59,6 +60,7 @@ Enforces an opinionated UI baseline to prevent AI-generated interface slop.
 
 ## Typography
 
+- MUST follow the typography system in `DESIGN.md` when present
 - MUST use `text-balance` for headings and `text-pretty` for body/paragraphs
 - MUST use `tabular-nums` for data
 - SHOULD use `truncate` or `line-clamp` for dense UI
@@ -77,10 +79,16 @@ Enforces an opinionated UI baseline to prevent AI-generated interface slop.
 
 ## Design
 
+- MUST use the Chai design language from `DESIGN.md` when present: warm parchment canvas, bark text, border-first surfaces, IBM Plex Sans, and restrained orange emphasis
+- MUST follow the theme model from `DESIGN.md` when present: `Light`, `Dark`, `Chai`, and `System`
+- MUST treat `Chai` as a separate opt-in theme, not as the default meaning of `dark`
+- MUST ensure `System` resolves to standard `Light`/`Dark` behavior and never silently maps to `Chai`
+- MUST keep theme pickers in the order `Light`, `Dark`, `Chai`, `System` when all are exposed
 - NEVER use gradients unless explicitly requested
 - NEVER use purple or multicolor gradients
 - NEVER use glow effects as primary affordances
-- SHOULD use Tailwind CSS default shadow scale unless explicitly requested
+- SHOULD use the shadow system defined in `DESIGN.md` when present instead of Tailwind default shadow assumptions
 - MUST give empty states one clear next action
 - SHOULD limit accent color usage to one per view
 - SHOULD use existing theme or Tailwind CSS color tokens before introducing new ones
+- MUST ensure selected navigation states and text selection remain high-contrast and readable

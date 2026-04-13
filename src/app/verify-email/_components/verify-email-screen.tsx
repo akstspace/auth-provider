@@ -1,17 +1,17 @@
 "use client"
 
-import { useEffect, useState, Suspense } from "react"
+import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { motion } from "motion/react"
 import { authClient } from "@/lib/auth-client"
+import { AuthScreenShell } from "@/components/auth/auth-screen-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Mail } from "lucide-react"
 import { getAuthErrorMessage } from "@/lib/auth-error"
 import { getAuthFlowParams, resolveCallbackUrl, withAuthFlow } from "@/lib/auth-flow"
-import { pageEnterMotion } from "@/lib/motion"
 
 export function VerifyEmailScreen() {
+    const [resendCooldown, setResendCooldown] = useState(0)
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState("")
     const [error, setError] = useState("")
@@ -34,12 +34,26 @@ export function VerifyEmailScreen() {
         }
     }, [callbackTarget, router, session?.user?.emailVerified])
 
+    useEffect(() => {
+        if (resendCooldown <= 0) return
+
+        const timeout = window.setTimeout(() => {
+            setResendCooldown((current) => Math.max(0, current - 1))
+        }, 1000)
+
+        return () => window.clearTimeout(timeout)
+    }, [resendCooldown])
+
     const handleResend = async () => {
         if (!isLoggedIn) return
 
         const emailToUse = userEmail || manualEmail
         if (!emailToUse) {
             setError("Please enter your email address.")
+            return
+        }
+        if (resendCooldown > 0) {
+            setError(`Please wait ${resendCooldown}s before resending the verification email.`)
             return
         }
         setLoading(true)
@@ -53,6 +67,7 @@ export function VerifyEmailScreen() {
             if (sendError) {
                 setError(getAuthErrorMessage(sendError, "Failed to resend verification email."))
             } else {
+                setResendCooldown(45)
                 setMessage("Verification email has been resent.")
             }
         } catch (err) {
@@ -96,30 +111,26 @@ export function VerifyEmailScreen() {
     }
 
     return (
-        <div className="min-h-dvh bg-background text-foreground flex items-center justify-center p-4">
-            <motion.div
-                {...pageEnterMotion}
-                className="w-full max-w-sm"
-            >
+        <AuthScreenShell>
                 <div className="mb-8 text-center">
                     <div className="flex justify-center mb-4">
-                        <div className="flex items-center justify-center size-12 rounded-full bg-primary/10">
-                            <Mail className="size-6 text-primary" />
+                        <div className="flex items-center justify-center size-12 rounded-md bg-[var(--icon-soft)]">
+                            <Mail className="size-6 text-foreground" />
                         </div>
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight text-balance">Check your email</h1>
+                    <h1 className="text-2xl font-bold text-balance">Check your email</h1>
                     <p className="text-sm text-muted-foreground mt-2 text-pretty">
                         We need to verify your email address to secure your account. Please check your inbox.
                     </p>
                 </div>
 
                 {error && (
-                    <div role="alert" className="text-sm text-destructive text-center py-1 mb-4">
+                    <div role="alert" className="mb-4 rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-3 py-2 text-center text-sm text-destructive">
                         {error}
                     </div>
                 )}
                 {message && (
-                    <div role="status" className="text-sm text-emerald-500 text-center py-1 mb-4">
+                    <div role="status" className="mb-4 rounded-lg border border-[color:var(--success)]/25 bg-[var(--success-soft)] px-3 py-2 text-center text-sm text-[color:var(--success)]">
                         {message}
                     </div>
                 )}
@@ -143,10 +154,14 @@ export function VerifyEmailScreen() {
                             <Button
                                 variant="outline"
                                 onClick={handleResend}
-                                disabled={loading}
+                                disabled={loading || resendCooldown > 0}
                                 className="w-full"
                             >
-                                {loading ? "Sending..." : "Resend verification email"}
+                                {loading
+                                    ? "Sending..."
+                                    : resendCooldown > 0
+                                      ? `Resend available in ${resendCooldown}s`
+                                      : "Resend verification email"}
                             </Button>
 
                             <button
@@ -161,7 +176,7 @@ export function VerifyEmailScreen() {
                                         }),
                                     )
                                 }}
-                                className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors text-center"
+                                className="w-full text-center text-xs text-muted-foreground transition-colors hover:text-[#c94b1f]"
                             >
                                 Sign out and use a different account
                             </button>
@@ -172,7 +187,6 @@ export function VerifyEmailScreen() {
                         </p>
                     )}
                 </div>
-            </motion.div>
-        </div>
+        </AuthScreenShell>
     )
 }

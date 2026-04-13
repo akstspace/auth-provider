@@ -4,10 +4,15 @@ import { type FormEvent, useState } from "react"
 import { UserPlus } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardDescription, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { AdminPageHeader } from "@/components/admin/admin-shell"
+import {
+    AdminPageHeader,
+    AdminSectionCard,
+    AdminSectionContent,
+    AdminSectionHeader,
+} from "@/components/admin/admin-shell"
 import { authClient } from "@/lib/auth-client"
 import { formatAdminError, unwrapAdminUser } from "@/lib/admin-data"
 import { toRolePayload } from "@/lib/platform-admin"
@@ -80,82 +85,100 @@ export function AdminCreateUserScreen() {
             />
 
             {error ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {error}
                 </div>
             ) : null}
 
-            <Card className="border-border/50 bg-card xl:max-w-4xl">
-                <CardHeader>
-                    <CardTitle className="text-lg font-medium">New platform user</CardTitle>
-                    <CardDescription className="text-sm leading-6 text-pretty">
+            <div className="xl:max-w-4xl border-t pt-8">
+                <div className="mb-8">
+                    <h2 className="text-lg font-medium text-foreground">New platform user</h2>
+                    <p className="text-sm leading-6 text-muted-foreground text-pretty mt-1">
                         Create the account first, then continue to the detail page for bans, password changes, and sessions.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Name</label>
-                                <Input value={name} onChange={(event) => setName(event.target.value)} required />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Email</label>
-                                <Input
-                                    type="email"
-                                    value={email}
-                                    onChange={(event) => setEmail(event.target.value)}
-                                    required
-                                />
-                            </div>
+                    </p>
+                </div>
+                
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    <div className="grid gap-6 md:grid-cols-[1fr_2fr] items-start border-b pb-8">
+                        <div className="space-y-1">
+                            <label className="text-sm font-medium">Profile</label>
+                            <p className="text-sm text-muted-foreground">The user's display name and primary email address.</p>
                         </div>
+                        <div className="w-full max-w-lg space-y-4">
+                            <Input placeholder="Name" value={name} onChange={(event) => setName(event.target.value)} required />
+                            <Input
+                                type="email"
+                                placeholder="Email"
+                                value={email}
+                                onChange={(event) => setEmail(event.target.value)}
+                                required
+                            />
+                        </div>
+                    </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Roles</label>
+                    <div className="grid gap-6 md:grid-cols-[1fr_2fr] items-start border-b pb-8">
+                        <div className="space-y-1">
+                            <label className="text-sm font-medium">Access and Roles</label>
+                            <p className="text-sm text-muted-foreground">Specify the role this user will have. Defaults to standard user.</p>
+                        </div>
+                        <div className="w-full max-w-lg space-y-4">
                             <Input
                                 value={roles}
                                 onChange={(event) => setRoles(event.target.value)}
                                 placeholder="user"
                             />
                         </div>
+                    </div>
 
-                        <label className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
-                            <input
-                                type="checkbox"
-                                checked={createCredentialAccount}
-                                onChange={(event) => setCreateCredentialAccount(event.target.checked)}
-                                className="mt-0.5 size-4"
-                            />
-                            <span>Create a credential account with a password.</span>
-                        </label>
-
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Password</label>
+                    <div className="grid gap-6 md:grid-cols-[1fr_2fr] items-start border-b pb-8">
+                        <div className="space-y-1">
+                            <label className="text-sm font-medium">Authentication</label>
+                            <p className="text-sm text-muted-foreground">Optionally create a credential account with an initial password.</p>
+                        </div>
+                        <div className="w-full max-w-lg space-y-4">
+                            <label className="flex items-start gap-3 rounded-lg border bg-muted p-3 text-sm">
+                                <input
+                                    type="checkbox"
+                                    checked={createCredentialAccount}
+                                    onChange={(event) => setCreateCredentialAccount(event.target.checked)}
+                                    className="mt-0.5 size-4"
+                                />
+                                <span>Create a credential account with a password.</span>
+                            </label>
                             <Input
                                 type="password"
+                                placeholder="Initial password"
                                 value={password}
                                 onChange={(event) => setPassword(event.target.value)}
                                 required={createCredentialAccount}
                                 disabled={!createCredentialAccount}
                             />
                         </div>
+                    </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Extra JSON</label>
+                    <div className="grid gap-6 md:grid-cols-[1fr_2fr] items-start border-b pb-8">
+                        <div className="space-y-1">
+                            <label className="text-sm font-medium">Advanced</label>
+                            <p className="text-sm text-muted-foreground">Additional metadata payload in JSON format.</p>
+                        </div>
+                        <div className="w-full max-w-lg space-y-4">
                             <Textarea
                                 value={extraJson}
                                 onChange={(event) => setExtraJson(event.target.value)}
                                 placeholder='{"customField":"customValue"}'
+                                className="font-mono text-sm"
                             />
                         </div>
+                    </div>
 
+                    <div className="flex justify-end pt-4">
                         <Button type="submit" size="sm" disabled={loading}>
                             <UserPlus className="size-4" />
                             <span className="ml-2">{loading ? "Creating..." : "Create user"}</span>
                         </Button>
-                    </form>
-                </CardContent>
-            </Card>
+                    </div>
+                </form>
+            </div>
         </div>
     )
 }

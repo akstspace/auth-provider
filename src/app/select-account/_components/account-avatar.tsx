@@ -1,4 +1,3 @@
-import Image from "next/image"
 import { User } from "lucide-react"
 
 export function AccountAvatar({
@@ -8,12 +7,13 @@ export function AccountAvatar({
 }) {
   if (image) {
     return (
-      <Image
+      <img
         src={image}
         alt=""
         width={40}
         height={40}
-        unoptimized
+        loading="lazy"
+        referrerPolicy="no-referrer"
         className="size-10 shrink-0 rounded-full object-cover"
       />
     )

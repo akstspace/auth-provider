@@ -3,9 +3,9 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus } from "lucide-react"
+import { Plus, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardDescription, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
     Select,
@@ -23,7 +23,13 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { AdminPageHeader, AdminStatusBadge } from "@/components/admin/admin-shell"
+import {
+    AdminPageHeader,
+    AdminSectionCard,
+    AdminSectionContent,
+    AdminSectionHeader,
+    AdminStatusBadge,
+} from "@/components/admin/admin-shell"
 import {
     DEFAULT_ADMIN_LIST_QUERY,
     type AdminFilterKey,
@@ -131,176 +137,168 @@ export function AdminUsersScreen() {
                 }
             />
 
-            <Card className="border-border/50 bg-card">
-                <CardHeader>
-                    <CardTitle className="text-lg font-medium">Find users</CardTitle>
-                    <CardDescription className="text-sm leading-6 text-pretty">
-                        Keep this page focused on discovery. Editing and higher-risk actions happen in the detail view.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                    <form
-                        onSubmit={(event) => {
-                            event.preventDefault()
-                            setQuery({ ...draftQuery, offset: 0 })
-                        }}
-                        className="space-y-5"
-                    >
-                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-12">
-                            <div className="space-y-2 xl:col-span-4">
-                                <label className="text-sm font-medium">Search</label>
-                                <Input
-                                    value={draftQuery.searchValue}
-                                    onChange={(event) =>
-                                        setDraftQuery((current) => ({
-                                            ...current,
-                                            searchValue: event.target.value,
-                                        }))
-                                    }
-                                    placeholder="Search by email or name"
-                                />
-                            </div>
-
-                            <div className="space-y-2 xl:col-span-2">
-                                <label className="text-sm font-medium">Field</label>
-                                <Select
-                                    value={draftQuery.searchField}
-                                    onValueChange={(value) =>
-                                        setDraftQuery((current) => ({
-                                            ...current,
-                                            searchField: value as AdminSearchField,
-                                        }))
-                                    }
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="email">Email</SelectItem>
-                                        <SelectItem value="name">Name</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2 xl:col-span-2">
-                                <label className="text-sm font-medium">Match</label>
-                                <Select
-                                    value={draftQuery.searchOperator}
-                                    onValueChange={(value) =>
-                                        setDraftQuery((current) => ({
-                                            ...current,
-                                            searchOperator: value as AdminSearchOperator,
-                                        }))
-                                    }
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {SEARCH_OPERATOR_OPTIONS.map((option) => (
-                                            <SelectItem key={option.value} value={option.value}>
-                                                {option.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2 xl:col-span-2">
-                                <label className="text-sm font-medium">Status</label>
-                                <Select
-                                    value={draftQuery.filterKey}
-                                    onValueChange={(value) =>
-                                        setDraftQuery((current) => ({
-                                            ...current,
-                                            filterKey: value as AdminFilterKey,
-                                        }))
-                                    }
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {FILTER_OPTIONS.map((option) => (
-                                            <SelectItem key={option.value} value={option.value}>
-                                                {option.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2 xl:col-span-2">
-                                <label className="text-sm font-medium">Sort</label>
-                                <Select
-                                    value={`${draftQuery.sortBy}:${draftQuery.sortDirection}`}
-                                    onValueChange={(value) => {
-                                        const [sortBy, sortDirection] = value.split(":")
-                                        setDraftQuery((current) => ({
-                                            ...current,
-                                            sortBy,
-                                            sortDirection: sortDirection as AdminSortDirection,
-                                        }))
-                                    }}
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {SORT_OPTIONS.map((option) => (
-                                            <SelectItem key={option.value} value={option.value}>
-                                                {option.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+            <div className="mb-8 p-4 md:p-6 bg-muted/40 rounded-xl border border-border/50">
+                <form
+                    onSubmit={(event) => {
+                        event.preventDefault()
+                        setQuery({ ...draftQuery, offset: 0 })
+                    }}
+                    className="space-y-6"
+                >
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-12 lg:gap-6">
+                        <div className="space-y-2 xl:col-span-4">
+                            <label className="text-sm font-medium">Search</label>
+                            <Input
+                                value={draftQuery.searchValue}
+                                onChange={(event) =>
+                                    setDraftQuery((current) => ({
+                                        ...current,
+                                        searchValue: event.target.value,
+                                    }))
+                                }
+                                placeholder="Search by email or name"
+                            />
                         </div>
 
-                        <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
-                            <p className="max-w-3xl text-sm leading-6 text-muted-foreground text-pretty">
-                                Open a user to manage profile, password, sessions, and suspension settings.
-                            </p>
-                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                                {hasActiveFilters ? (
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={resetFilters}
-                                        className="w-full sm:w-auto"
-                                    >
-                                        Reset
-                                    </Button>
-                                ) : null}
-                                <Button type="submit" size="sm" className="w-full sm:w-auto">
-                                    Apply filters
+                        <div className="space-y-2 xl:col-span-2">
+                            <label className="text-sm font-medium">Field</label>
+                            <Select
+                                value={draftQuery.searchField}
+                                onValueChange={(value) =>
+                                    setDraftQuery((current) => ({
+                                        ...current,
+                                        searchField: value as AdminSearchField,
+                                    }))
+                                }
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="email">Email</SelectItem>
+                                    <SelectItem value="name">Name</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2 xl:col-span-2">
+                            <label className="text-sm font-medium">Match</label>
+                            <Select
+                                value={draftQuery.searchOperator}
+                                onValueChange={(value) =>
+                                    setDraftQuery((current) => ({
+                                        ...current,
+                                        searchOperator: value as AdminSearchOperator,
+                                    }))
+                                }
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {SEARCH_OPERATOR_OPTIONS.map((option) => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2 xl:col-span-2">
+                            <label className="text-sm font-medium">Status</label>
+                            <Select
+                                value={draftQuery.filterKey}
+                                onValueChange={(value) =>
+                                    setDraftQuery((current) => ({
+                                        ...current,
+                                        filterKey: value as AdminFilterKey,
+                                    }))
+                                }
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {FILTER_OPTIONS.map((option) => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2 xl:col-span-2">
+                            <label className="text-sm font-medium">Sort</label>
+                            <Select
+                                value={`${draftQuery.sortBy}:${draftQuery.sortDirection}`}
+                                onValueChange={(value) => {
+                                    const [sortBy, sortDirection] = value.split(":")
+                                    setDraftQuery((current) => ({
+                                        ...current,
+                                        sortBy,
+                                        sortDirection: sortDirection as AdminSortDirection,
+                                    }))
+                                }}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {SORT_OPTIONS.map((option) => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="max-w-3xl text-sm leading-6 text-muted-foreground text-pretty">
+                            Open a user to manage profile, password, sessions, and suspension settings.
+                        </p>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                            {hasActiveFilters ? (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={resetFilters}
+                                    className="w-full sm:w-auto"
+                                >
+                                    Reset
                                 </Button>
-                            </div>
+                            ) : null}
+                            <Button type="submit" size="sm" className="w-full sm:w-auto">
+                                Apply filters
+                            </Button>
                         </div>
-                    </form>
-                </CardContent>
-            </Card>
+                    </div>
+                </form>
+            </div>
 
             {error ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {error}
                 </div>
             ) : null}
 
-            <Card className="border-border/50 bg-card">
-                <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between pb-2">
                     <div>
-                        <CardTitle className="text-lg font-medium">User results</CardTitle>
-                        <CardDescription className="text-sm leading-6 text-pretty">
+                        <h2 className="text-lg font-medium text-foreground">User results</h2>
+                        <p className="text-sm leading-6 text-muted-foreground text-pretty mt-1">
                             {total} matched result{total === 1 ? "" : "s"}.
-                        </CardDescription>
+                        </p>
                     </div>
-                    <div className="rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
+                    <div className="rounded-md border bg-muted px-3 py-1 text-xs text-muted-foreground">
                         Page {currentPage} of {totalPages}
                     </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                </div>
+                <div className="space-y-4">
                     {loading ? (
                         <>
                             <div className="hidden md:block space-y-2">
@@ -315,16 +313,18 @@ export function AdminUsersScreen() {
                             </div>
                         </>
                     ) : users.length === 0 ? (
-                        <div className="rounded-xl border border-dashed border-border/70 bg-muted/20 p-6 text-sm text-muted-foreground">
-                            <p>No users match these filters.</p>
-                            <Button asChild variant="outline" size="sm" className="mt-4">
+                        <div className="rounded-lg border bg-muted/30 p-12 text-center text-sm text-muted-foreground">
+                            <Users className="mx-auto size-8 text-muted-foreground/50 mb-4" />
+                            <p className="font-medium text-foreground text-base">No users match these filters</p>
+                            <p className="mt-1 mb-6 max-w-md mx-auto">Try adjusting your search query or removing some filters to see more results.</p>
+                            <Button asChild variant="outline" size="sm">
                                 <Link href="/admin/users/new">Create a user</Link>
                             </Button>
                         </div>
                     ) : (
                         <>
                             <div className="hidden md:block">
-                                <div className="overflow-hidden rounded-xl border border-border/60">
+                                <div className="overflow-hidden rounded-lg border">
                                     <Table className="min-w-[760px]">
                                         <TableHeader>
                                             <TableRow>
@@ -395,7 +395,7 @@ export function AdminUsersScreen() {
 
                             <div className="space-y-3 md:hidden">
                                 {users.map((user) => (
-                                    <div key={user.id} className="rounded-xl border border-border/60 p-4">
+                                    <div key={user.id} className="rounded-lg border bg-background p-4">
                                         <Link
                                             href={`/admin/users/${user.id}`}
                                             className="block font-medium text-foreground hover:underline"
@@ -430,7 +430,7 @@ export function AdminUsersScreen() {
                         </>
                     )}
 
-                    <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
                         <p className="text-sm text-muted-foreground">
                             Showing {users.length} of {total}
                         </p>
@@ -468,8 +468,8 @@ export function AdminUsersScreen() {
                             </Button>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         </div>
     )
 }

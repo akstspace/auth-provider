@@ -1,5 +1,8 @@
+import "server-only";
+
 import nodemailer from "nodemailer";
 import { appName } from "@/lib/app-config";
+import { validateInviteOnlyEmail } from "@/lib/invite-only";
 
 interface EmailOptions {
   to: string;
@@ -9,7 +12,7 @@ interface EmailOptions {
   from?: string;
 }
 
-const isConfigured = !!process.env.SMTP_HOST;
+export const smtpEnabled = Boolean(process.env.SMTP_HOST?.trim());
 
 /**
  * Escape HTML special characters to prevent injection in email templates.
@@ -46,7 +49,7 @@ function sanitizeUrl(url: string): string {
  *
  * Env vars: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_SECURE, EMAIL_FROM
  */
-const transporter = isConfigured
+const transporter = smtpEnabled
   ? nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT) || 587,
@@ -70,6 +73,9 @@ function maskEmail(email: string): string {
 
 export async function sendEmail(opts: EmailOptions): Promise<void> {
   if (!transporter) {
+    console.warn(
+      `SMTP is not configured; skipped outbound email "${opts.subject}" to ${maskEmail(opts.to)}.`,
+    );
     return;
   }
 
@@ -88,6 +94,11 @@ export async function sendEmail(opts: EmailOptions): Promise<void> {
 }
 
 export async function sendVerificationEmail({ user, url }: { user: { email: string }, url: string }) {
+  const validation = await validateInviteOnlyEmail(user.email);
+  if (!validation.allowed) {
+    throw new Error(validation.message);
+  }
+
   const safeUrl = sanitizeUrl(url);
 
   await sendEmail({

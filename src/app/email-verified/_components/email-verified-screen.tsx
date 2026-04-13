@@ -3,11 +3,11 @@
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { motion } from "motion/react"
+import { AuthScreenShell } from "@/components/auth/auth-screen-shell"
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { CheckCircle2, XCircle } from "lucide-react"
-import { Suspense } from "react"
-import { cardEnterMotion, pageEnterMotion } from "@/lib/motion"
+import { cardEnterMotion } from "@/lib/motion"
 
 export function EmailVerifiedScreen() {
     const searchParams = useSearchParams()
@@ -15,27 +15,23 @@ export function EmailVerifiedScreen() {
     const isSuccess = !error
 
     return (
-        <div className="min-h-dvh bg-background text-foreground flex items-center justify-center p-4">
-            <motion.div
-                {...pageEnterMotion}
-                className="w-full max-w-sm"
-            >
+        <AuthScreenShell>
                 <div className="mb-8 text-center">
                     <div className="flex justify-center mb-4">
                         <motion.div
                             {...cardEnterMotion}
                             transition={{ ...cardEnterMotion.transition, delay: 0.06 }}
-                            className={`flex items-center justify-center size-12 rounded-full ${isSuccess ? "bg-emerald-500/10" : "bg-destructive/10"
+                            className={`flex items-center justify-center size-12 rounded-md ${isSuccess ? "bg-[var(--success-soft)]" : "bg-[var(--danger-soft)]"
                                 }`}
                         >
                             {isSuccess ? (
-                                <CheckCircle2 className="size-6 text-emerald-500" />
+                                <CheckCircle2 className="size-6 text-[color:var(--success)]" />
                             ) : (
                                 <XCircle className="size-6 text-destructive" />
                             )}
                         </motion.div>
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight text-balance">
+                    <h1 className="text-2xl font-bold text-balance">
                         {isSuccess ? "Email verified" : "Verification failed"}
                     </h1>
                     <p className="text-sm text-muted-foreground mt-2 text-pretty">
@@ -61,7 +57,6 @@ export function EmailVerifiedScreen() {
                         </>
                     )}
                 </div>
-            </motion.div>
-        </div>
+        </AuthScreenShell>
     )
 }

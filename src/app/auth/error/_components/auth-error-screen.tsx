@@ -3,8 +3,8 @@
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { AlertTriangle, Ban, RefreshCw } from "lucide-react"
+import { AuthScreenShell } from "@/components/auth/auth-screen-shell"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 
 const DEFAULT_BANNED_MESSAGE =
     "Your account has been suspended. Contact a platform administrator if you think this is a mistake."
@@ -113,6 +113,14 @@ const KNOWN_ERROR_COPY: Record<
             "Contact support if you believe you should have access.",
         ],
     },
+    invite_only: {
+        title: "Invitation required",
+        description: "This email address is not currently allowed to create an account.",
+        help: [
+            "Return to sign in if you already have an account.",
+            "Use an approved email address if you have one.",
+        ],
+    },
 }
 
 export function AuthErrorScreen() {
@@ -158,13 +166,11 @@ export function AuthErrorScreen() {
 
     const displayExpiry = expiresAt ? new Date(expiresAt) : null
     const icon = isBanned ? <Ban className="size-5" /> : <AlertTriangle className="size-5" />
-    const hasSummaryDetails = Boolean(error) || Boolean(email && !isBanned)
+    const hasSummaryDetails = Boolean(email && !isBanned)
 
     return (
-        <div className="flex min-h-dvh items-center justify-center bg-background px-4 py-10 text-foreground">
-            <Card className="w-full max-w-xl border-border/60 bg-card/80 shadow-sm">
-                <CardContent className="p-8">
-                    <div className="mb-6 flex size-12 items-center justify-center rounded-xl bg-muted text-foreground">
+        <AuthScreenShell widthClassName="max-w-xl" cardClassName="px-6 py-8 sm:px-8">
+                    <div className="mb-6 flex size-12 items-center justify-center rounded-md bg-[var(--icon-soft)] text-foreground">
                         {icon}
                     </div>
                     <h1 className="text-3xl font-semibold text-balance">{errorContent.title}</h1>
@@ -172,15 +178,8 @@ export function AuthErrorScreen() {
 
                     {hasSummaryDetails ? (
                         <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                            {error ? (
-                                <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
-                                    <p className="text-xs text-muted-foreground">Error code</p>
-                                    <p className="mt-2 text-sm font-medium">{error}</p>
-                                </div>
-                            ) : null}
-
                             {email && !isBanned ? (
-                                <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+                                <div className="rounded-md border bg-secondary p-4">
                                     <p className="text-xs text-muted-foreground">Account</p>
                                     <p className="mt-2 text-sm font-medium">{email}</p>
                                 </div>
@@ -191,21 +190,21 @@ export function AuthErrorScreen() {
                     {isBanned ? (
                         <div className="mt-3 space-y-3">
                             {email ? (
-                                <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+                                <div className="rounded-md border bg-secondary p-4">
                                     <p className="text-xs text-muted-foreground">Account</p>
                                     <p className="mt-2 text-sm font-medium">{email}</p>
                                 </div>
                             ) : null}
 
                             {reason ? (
-                                <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+                                <div className="rounded-md border bg-secondary p-4">
                                     <p className="text-xs text-muted-foreground">Reason</p>
                                     <p className="mt-2 text-sm text-foreground">{reason}</p>
                                 </div>
                             ) : null}
 
                             {displayExpiry && !Number.isNaN(displayExpiry.getTime()) ? (
-                                <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+                                <div className="rounded-md border bg-secondary p-4">
                                     <p className="text-xs text-muted-foreground">Suspension ends</p>
                                     <p className="mt-2 text-sm text-foreground">{displayExpiry.toLocaleString()}</p>
                                 </div>
@@ -213,7 +212,7 @@ export function AuthErrorScreen() {
                         </div>
                     ) : null}
 
-                    <div className="mt-6 rounded-xl border border-border/60 bg-muted/20 p-4">
+                    <div className="mt-6 rounded-md border bg-secondary p-4">
                         <div className="flex items-center gap-2 text-sm font-medium">
                             <RefreshCw className="size-4 text-muted-foreground" />
                             What to try
@@ -237,12 +236,10 @@ export function AuthErrorScreen() {
                     </div>
 
                     {isBanned ? (
-                        <div className="mt-3 rounded-xl border border-border/60 bg-muted/20 px-4 py-3 text-sm text-muted-foreground text-pretty">
+                        <div className="mt-3 rounded-md border bg-secondary px-4 py-3 text-sm text-muted-foreground text-pretty">
                             Contact your platform administrator if you need this suspension reviewed. If an expiry was set, access will return automatically after that time.
                         </div>
                     ) : null}
-                </CardContent>
-            </Card>
-        </div>
+        </AuthScreenShell>
     )
 }

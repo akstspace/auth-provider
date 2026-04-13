@@ -3,9 +3,11 @@ export const captchaSiteKey =
 
 export const captchaEnabled = Boolean(captchaSiteKey);
 
-export const captchaHeader = (token: string | null) =>
+export const captchaHeader = (
+  token: string | null,
+): Record<string, string> | undefined =>
   token
     ? {
         "x-captcha-response": token,
       }
-    : {};
+    : undefined;

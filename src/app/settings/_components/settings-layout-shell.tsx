@@ -34,14 +34,14 @@ const ADVANCED_NAV_ITEMS: NavItem[] = [
     { href: "/settings/oauth-clients", label: "OAuth Clients", icon: KeyRound },
 ]
 
-export function SettingsLayoutShell({ children }: { children: React.ReactNode }) {
+export function SettingsLayoutShell({ children, allowUserClientCreation = true }: { children: React.ReactNode; allowUserClientCreation?: boolean }) {
     const pathname = usePathname()
 
     const getNavItemClassName = (item: NavItem) => {
         const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
         return `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${isActive
-            ? "bg-muted text-foreground"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            ? "border border-border bg-secondary text-foreground"
+            : "text-muted-foreground hover:bg-accent hover:text-[#c94b1f]"
             }`
     }
 
@@ -73,21 +73,23 @@ export function SettingsLayoutShell({ children }: { children: React.ReactNode })
                                 </nav>
                             </AppSidebarSection>
 
-                            <AppSidebarSection title="Advanced">
-                                <nav className="space-y-1">
-                                    {ADVANCED_NAV_ITEMS.map((item) => (
-                                        <Link
-                                            key={item.href}
-                                            href={item.href}
-                                            onClick={closeSidebar}
-                                            className={getNavItemClassName(item)}
-                                        >
-                                            <item.icon className="size-4" />
-                                            {item.label}
-                                        </Link>
-                                    ))}
-                                </nav>
-                            </AppSidebarSection>
+                            {allowUserClientCreation && (
+                                <AppSidebarSection title="Advanced">
+                                    <nav className="space-y-1">
+                                        {ADVANCED_NAV_ITEMS.map((item) => (
+                                            <Link
+                                                key={item.href}
+                                                href={item.href}
+                                                onClick={closeSidebar}
+                                                className={getNavItemClassName(item)}
+                                            >
+                                                <item.icon className="size-4" />
+                                                {item.label}
+                                            </Link>
+                                        ))}
+                                    </nav>
+                                </AppSidebarSection>
+                            )}
 
                             <AppShellUtilitySection closeSidebar={closeSidebar} />
                         </motion.div>

@@ -4,7 +4,7 @@ import { type FormEvent, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { KeyRound, Copy, Check, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardDescription, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -15,7 +15,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import { AdminPageHeader } from "@/components/admin/admin-shell"
+import {
+    AdminPageHeader,
+    AdminSectionCard,
+    AdminSectionContent,
+    AdminSectionHeader,
+} from "@/components/admin/admin-shell"
 import { BUILTIN_SELF_SERVICE_SCOPE_KEYS } from "@/lib/oauth-scope-constants"
 
 interface ScopeDefinition {
@@ -200,46 +205,122 @@ export function AdminCreateOAuthClientScreen() {
             />
 
             {error ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {error}
                 </div>
             ) : null}
 
-            <Card className="border-border/50 bg-card xl:max-w-4xl">
-                <CardHeader>
-                    <CardTitle className="text-lg font-medium">New OAuth client</CardTitle>
-                    <CardDescription className="text-sm leading-6 text-pretty">
+            <div className="xl:max-w-5xl border-t pt-8">
+                <div className="mb-8">
+                    <h2 className="text-lg font-medium text-foreground">New OAuth client</h2>
+                    <p className="text-sm leading-6 text-muted-foreground text-pretty mt-1">
                         Configure the client type, redirect URIs, and permissions. Confidential clients
                         receive a one-time secret after creation.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div className="space-y-2">
-                            <label htmlFor="client-name" className="text-sm font-medium">Client name</label>
-                            <Input
-                                id="client-name"
-                                value={name}
-                                onChange={(event) => setName(event.target.value)}
-                                placeholder="My Application"
-                                required
-                            />
+                    </p>
+                </div>
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    <div className="grid gap-6 md:grid-cols-[1fr_2fr] items-start border-b pb-8">
+                        <div className="space-y-1">
+                            <label htmlFor="client-name" className="text-sm font-medium">Basic details</label>
+                            <p className="text-sm text-muted-foreground">The display name of the application and its allowed callback URIs.</p>
                         </div>
-
-                        <div className="space-y-2">
-                            <label htmlFor="redirect-uris" className="text-sm font-medium">Redirect URIs</label>
-                            <Textarea
-                                id="redirect-uris"
-                                value={redirectUris}
-                                onChange={(event) => setRedirectUris(event.target.value)}
-                                placeholder={"https://app.example.com/callback\nhttps://app.example.com/auth/callback"}
-                                rows={3}
-                            />
-                            <p className="text-xs text-muted-foreground">One URI per line.</p>
+                        <div className="w-full max-w-lg space-y-4">
+                            <div className="space-y-2">
+                                <label htmlFor="client-name" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Client Name</label>
+                                <Input
+                                    id="client-name"
+                                    value={name}
+                                    onChange={(event) => setName(event.target.value)}
+                                    placeholder="My Application"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label htmlFor="redirect-uris" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Redirect URIs</label>
+                                <Textarea
+                                    id="redirect-uris"
+                                    value={redirectUris}
+                                    onChange={(event) => setRedirectUris(event.target.value)}
+                                    placeholder={"https://app.example.com/callback\nhttps://app.example.com/auth/callback"}
+                                    rows={3}
+                                    className="font-mono text-sm"
+                                />
+                                <p className="text-xs text-muted-foreground">One URI per line.</p>
+                            </div>
                         </div>
+                    </div>
 
-                        <div className="space-y-3">
+                    <div className="grid gap-6 md:grid-cols-[1fr_2fr] items-start border-b pb-8">
+                        <div className="space-y-1">
+                            <p className="text-sm font-medium">Security & Trust</p>
+                            <p className="text-sm text-muted-foreground text-pretty">Define how this client behaves and whether it operates securely on a backend server or a public client.</p>
+                        </div>
+                        <div className="w-full max-w-lg space-y-3">
+                            <label className="flex items-start gap-3 rounded-lg border bg-muted p-3 text-sm">
+                                <input
+                                    type="checkbox"
+                                    checked={isPublic}
+                                    onChange={(event) => setIsPublic(event.target.checked)}
+                                    className="mt-0.5 size-4"
+                                />
+                                <div>
+                                    <span className="font-medium">Public client</span>
+                                    <p className="text-xs text-muted-foreground text-pretty">
+                                        No client secret. For native mobile apps or browser-based apps (SPAs).
+                                    </p>
+                                </div>
+                            </label>
+                            <label className="flex items-start gap-3 rounded-lg border bg-muted p-3 text-sm">
+                                <input
+                                    type="checkbox"
+                                    checked={skipConsent}
+                                    onChange={(event) => setSkipConsent(event.target.checked)}
+                                    className="mt-0.5 size-4"
+                                />
+                                <div>
+                                    <span className="font-medium">Skip consent</span>
+                                    <p className="text-xs text-muted-foreground text-pretty">
+                                        Trusted first-party app — users skip the consent screen.
+                                    </p>
+                                </div>
+                            </label>
+                            <label className="flex items-start gap-3 rounded-lg border bg-muted p-3 text-sm">
+                                <input
+                                    type="checkbox"
+                                    checked={requirePkce}
+                                    onChange={(event) => setRequirePkce(event.target.checked)}
+                                    className="mt-0.5 size-4"
+                                />
+                                <div>
+                                    <span className="font-medium">Require PKCE</span>
+                                    <p className="text-xs text-muted-foreground text-pretty">
+                                        Keep this enabled for modern OAuth clients unless you have a specific compatibility requirement.
+                                    </p>
+                                </div>
+                            </label>
+                            <label className="flex items-start gap-3 rounded-lg border bg-muted p-3 text-sm">
+                                <input
+                                    type="checkbox"
+                                    checked={enableEndSession}
+                                    onChange={(event) => setEnableEndSession(event.target.checked)}
+                                    className="mt-0.5 size-4"
+                                />
+                                <div>
+                                    <span className="font-medium">Enable end session</span>
+                                    <p className="text-xs text-muted-foreground text-pretty">
+                                        Allow this client to log users out remotely via their ID token.
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-6 md:grid-cols-[1fr_2fr] items-start border-b pb-8">
+                        <div className="space-y-1">
                             <p className="text-sm font-medium">Scopes</p>
+                            <p className="text-sm text-muted-foreground">Select the permissions this application is allowed to request.</p>
+                        </div>
+                        <div className="w-full max-w-lg space-y-3">
                             <div className="grid gap-2">
                                 {scopesLoading ? (
                                     <p className="text-sm text-muted-foreground">Loading available scopes…</p>
@@ -247,7 +328,7 @@ export function AdminCreateOAuthClientScreen() {
                                 {availableScopes.map((scope) => (
                                     <label
                                         key={scope.key}
-                                        className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-3 text-sm cursor-pointer hover:bg-muted/40 transition-colors"
+                                        className="flex cursor-pointer items-start gap-3 rounded-lg border bg-muted px-3 py-3 text-sm transition-colors hover:bg-accent"
                                     >
                                         <input
                                             type="checkbox"
@@ -258,7 +339,7 @@ export function AdminCreateOAuthClientScreen() {
                                         <div className="space-y-1">
                                             <div className="flex items-center gap-2">
                                                 <span className="text-sm font-medium">{scope.label}</span>
-                                                <code className="rounded bg-muted px-1.5 py-0.5 text-[11px]">
+                                                <code className="rounded-md border bg-background px-1.5 py-0.5 text-[11px]">
                                                     {scope.key}
                                                 </code>
                                             </div>
@@ -273,117 +354,66 @@ export function AdminCreateOAuthClientScreen() {
                                 Active custom scopes appear here immediately after saving, but the OAuth provider will only issue them after restart or redeploy.
                             </p>
                         </div>
+                    </div>
 
-                        <div className="space-y-2">
-                            <p className="text-sm font-medium">Client type &amp; trust</p>
-                            <div className="space-y-2">
-                                <label className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
-                                    <input
-                                        type="checkbox"
-                                        checked={isPublic}
-                                        onChange={(event) => setIsPublic(event.target.checked)}
-                                        className="mt-0.5 size-4"
-                                    />
-                                    <div>
-                                        <span className="font-medium">Public client</span>
-                                        <p className="text-xs text-muted-foreground text-pretty">
-                                            No client secret. For native mobile apps or browser-based apps (SPAs).
-                                        </p>
-                                    </div>
-                                </label>
-                                <label className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
-                                    <input
-                                        type="checkbox"
-                                        checked={skipConsent}
-                                        onChange={(event) => setSkipConsent(event.target.checked)}
-                                        className="mt-0.5 size-4"
-                                    />
-                                    <div>
-                                        <span className="font-medium">Skip consent</span>
-                                        <p className="text-xs text-muted-foreground text-pretty">
-                                            Trusted first-party app — users skip the consent screen.
-                                        </p>
-                                    </div>
-                                </label>
-                                <label className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
-                                    <input
-                                        type="checkbox"
-                                        checked={enableEndSession}
-                                        onChange={(event) => setEnableEndSession(event.target.checked)}
-                                        className="mt-0.5 size-4"
-                                    />
-                                    <div>
-                                        <span className="font-medium">Enable end session</span>
-                                        <p className="text-xs text-muted-foreground text-pretty">
-                                            Allow this client to log users out remotely via their ID token.
-                                        </p>
-                                    </div>
-                                </label>
-                                <label className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
-                                    <input
-                                        type="checkbox"
-                                        checked={requirePkce}
-                                        onChange={(event) => setRequirePkce(event.target.checked)}
-                                        className="mt-0.5 size-4"
-                                    />
-                                    <div>
-                                        <span className="font-medium">Require PKCE</span>
-                                        <p className="text-xs text-muted-foreground text-pretty">
-                                            Keep this enabled for modern OAuth clients unless you have a specific compatibility requirement.
-                                        </p>
-                                    </div>
-                                </label>
-                            </div>
+                    <div className="grid gap-6 md:grid-cols-[1fr_2fr] items-start border-b pb-8">
+                        <div className="space-y-1">
+                            <p className="text-sm font-medium">Advanced Configuration</p>
+                            <p className="text-sm text-muted-foreground">Subject types, expiries, and private metadata.</p>
                         </div>
+                        <div className="w-full max-w-lg space-y-6">
+                            <div className="grid gap-5 sm:grid-cols-2">
+                                <div className="space-y-2">
+                                    <label htmlFor="subject-type" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Subject type</label>
+                                    <select
+                                        id="subject-type"
+                                        value={subjectType}
+                                        onChange={(event) => setSubjectType(event.target.value as (typeof SUBJECT_TYPE_OPTIONS)[number])}
+                                        className="flex h-10 w-full rounded-md border bg-muted px-3 py-2 text-sm"
+                                    >
+                                        {SUBJECT_TYPE_OPTIONS.map((option) => (
+                                            <option key={option} value={option}>
+                                                {option}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <p className="text-xs text-muted-foreground">
+                                        `pairwise` requires a configured pairwise subject secret on the server.
+                                    </p>
+                                </div>
 
-                        <div className="grid gap-5 md:grid-cols-2">
-                            <div className="space-y-2">
-                                <label htmlFor="subject-type" className="text-sm font-medium">Subject type</label>
-                                <select
-                                    id="subject-type"
-                                    value={subjectType}
-                                    onChange={(event) => setSubjectType(event.target.value as (typeof SUBJECT_TYPE_OPTIONS)[number])}
-                                    className="flex h-10 w-full rounded-md border border-border/60 bg-muted/20 px-3 py-2 text-sm"
-                                >
-                                    {SUBJECT_TYPE_OPTIONS.map((option) => (
-                                        <option key={option} value={option}>
-                                            {option}
-                                        </option>
-                                    ))}
-                                </select>
-                                <p className="text-xs text-muted-foreground">
-                                    `pairwise` requires a configured pairwise subject secret on the server.
-                                </p>
+                                <div className="space-y-2">
+                                    <label htmlFor="client-secret-expiry" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Client secret expiry</label>
+                                    <Input
+                                        id="client-secret-expiry"
+                                        value={clientSecretExpiresAt}
+                                        onChange={(event) => setClientSecretExpiresAt(event.target.value)}
+                                        placeholder="0"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        `0` means no expiry. You can also provide a supported custom value.
+                                    </p>
+                                </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label htmlFor="client-secret-expiry" className="text-sm font-medium">Client secret expiry</label>
-                                <Input
-                                    id="client-secret-expiry"
-                                    value={clientSecretExpiresAt}
-                                    onChange={(event) => setClientSecretExpiresAt(event.target.value)}
-                                    placeholder="0"
+                                <label htmlFor="client-metadata" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Private metadata JSON</label>
+                                <Textarea
+                                    id="client-metadata"
+                                    value={metadataText}
+                                    onChange={(event) => setMetadataText(event.target.value)}
+                                    placeholder={'{"internalOwner":"platform","tier":"trusted"}'}
+                                    rows={4}
+                                    className="font-mono text-sm"
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                    `0` means no expiry. You can also provide a supported custom value.
+                                    Optional server-managed metadata stored with the OAuth client.
                                 </p>
                             </div>
                         </div>
+                    </div>
 
-                        <div className="space-y-2">
-                            <label htmlFor="client-metadata" className="text-sm font-medium">Private metadata JSON</label>
-                            <Textarea
-                                id="client-metadata"
-                                value={metadataText}
-                                onChange={(event) => setMetadataText(event.target.value)}
-                                placeholder={'{"internalOwner":"platform","tier":"trusted"}'}
-                                rows={4}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Optional server-managed metadata stored with the OAuth client.
-                            </p>
-                        </div>
-
+                    <div className="flex justify-end pt-4">
                         <Button
                             type="submit"
                             size="sm"
@@ -392,16 +422,16 @@ export function AdminCreateOAuthClientScreen() {
                             <KeyRound className="size-4" />
                             <span className="ml-2">{loading ? "Creating…" : "Create client"}</span>
                         </Button>
-                    </form>
-                </CardContent>
-            </Card>
+                    </div>
+                </form>
+            </div>
 
             {/* One-time secret reveal dialog */}
             <Dialog open={showSecret} onOpenChange={() => { /* prevent close via overlay */ }}>
                 <DialogContent className="sm:max-w-lg" onPointerDownOutside={(e) => e.preventDefault()}>
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <AlertTriangle className="size-4 text-amber-500" />
+                            <AlertTriangle className="size-4 text-[color:var(--warning)]" />
                             Client credentials created
                         </DialogTitle>
                         <DialogDescription className="text-pretty">
@@ -413,7 +443,7 @@ export function AdminCreateOAuthClientScreen() {
                         <div className="space-y-1.5">
                             <p className="text-xs font-medium text-muted-foreground">Client ID</p>
                             <div className="flex items-center gap-2">
-                                <code className="flex-1 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-sm font-mono truncate">
+                                <code className="flex-1 rounded-lg border bg-muted px-3 py-2 text-sm font-mono truncate">
                                     {createdClientId}
                                 </code>
                                 <Button
@@ -424,7 +454,7 @@ export function AdminCreateOAuthClientScreen() {
                                     aria-label="Copy client ID"
                                 >
                                     {copiedField === "id" ? (
-                                        <Check className="size-3.5 text-emerald-500" />
+                                        <Check className="size-3.5 text-[color:var(--success)]" />
                                     ) : (
                                         <Copy className="size-3.5" />
                                     )}
@@ -435,7 +465,7 @@ export function AdminCreateOAuthClientScreen() {
                         <div className="space-y-1.5">
                             <p className="text-xs font-medium text-muted-foreground">Client Secret</p>
                             <div className="flex items-center gap-2">
-                                <code className="flex-1 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-sm font-mono truncate">
+                                <code className="flex-1 rounded-lg border bg-muted px-3 py-2 text-sm font-mono truncate">
                                     {createdSecret}
                                 </code>
                                 <Button
@@ -446,7 +476,7 @@ export function AdminCreateOAuthClientScreen() {
                                     aria-label="Copy client secret"
                                 >
                                     {copiedField === "secret" ? (
-                                        <Check className="size-3.5 text-emerald-500" />
+                                        <Check className="size-3.5 text-[color:var(--success)]" />
                                     ) : (
                                         <Copy className="size-3.5" />
                                     )}

@@ -1,19 +1,16 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Image from "next/image"
 import { useSearchParams } from "next/navigation"
-import { motion } from "motion/react"
 import { ArrowRightLeft, Loader2, Plus, User } from "lucide-react"
+import { AuthScreenShell } from "@/components/auth/auth-screen-shell"
 import { LoginRequired } from "@/components/login-required"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AccountAvatar } from "@/app/select-account/_components/account-avatar"
 import { authClient } from "@/lib/auth-client"
 import { getAuthErrorMessage } from "@/lib/auth-error"
 import { getAuthFlowParams, resolveCallbackUrl, withAuthFlow } from "@/lib/auth-flow"
-import { pageEnterMotion } from "@/lib/motion"
 
 interface DeviceSessionRecord {
   session: {
@@ -131,12 +128,41 @@ export function SelectAccountScreen() {
       }
 
       if (isOAuthFlow) {
-        const { error: continueError } = await authClient.oauth2.oauth2Continue({
-          selected: true,
+        const continueResponse = await fetch("/api/auth/oauth2/continue", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            selected: true,
+            oauth_query: flow.oauthQuery ?? undefined,
+          }),
         })
-        if (continueError) {
-          throw continueError
+
+        const continuePayload = (await continueResponse.json().catch(() => null)) as
+          | {
+              redirect_uri?: string
+              url?: string
+              error?: string
+              error_description?: string
+            }
+          | null
+
+        if (!continueResponse.ok) {
+          throw new Error(
+            continuePayload?.error_description ??
+              continuePayload?.error ??
+              "Failed to continue OAuth flow.",
+          )
         }
+
+        const targetUrl = continuePayload?.redirect_uri ?? continuePayload?.url
+
+        if (!targetUrl) {
+          throw new Error("OAuth continuation did not return a redirect target.")
+        }
+
+        window.location.href = targetUrl
         return
       }
 
@@ -178,161 +204,150 @@ export function SelectAccountScreen() {
 
   return (
     <LoginRequired>
-      <div className="flex min-h-dvh items-center justify-center bg-background p-4 text-foreground">
-        <motion.div {...pageEnterMotion} className="w-full max-w-md">
-          <Card className="border-border/50 bg-card">
-            <CardHeader className="space-y-2 text-center">
-              {isOAuthFlow && clientInfo?.icon ? (
-                <Image
-                  src={clientInfo.icon}
-                  alt=""
-                  width={48}
-                  height={48}
-                  unoptimized
-                  className="mx-auto size-12 rounded-2xl border border-border/60 bg-background object-cover"
-                />
-              ) : null}
-              <CardTitle className="text-3xl font-medium text-balance">
-                {heading}
-              </CardTitle>
-              <CardDescription className="text-sm text-pretty">
-                {description}
-              </CardDescription>
-            </CardHeader>
+      <AuthScreenShell widthClassName="max-w-lg" cardClassName="px-6 py-7 sm:px-7">
+        <div className="mb-8 text-center">
+          {isOAuthFlow && clientInfo?.icon ? (
+            <img
+              src={clientInfo.icon}
+              alt=""
+              width={48}
+              height={48}
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              className="mx-auto mb-4 size-12 rounded-md border bg-background object-cover"
+            />
+          ) : (
+            <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-md bg-[var(--icon-soft)]">
+              <User className="size-5 text-foreground" />
+            </div>
+          )}
+          <h1 className="text-2xl font-bold text-balance">{heading}</h1>
+          <p className="mt-2 text-sm text-muted-foreground text-pretty">{description}</p>
+        </div>
 
-            <CardContent className="space-y-4">
-              {error ? (
-                <div
-                  role="alert"
-                  className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive"
-                >
-                  {error}
-                </div>
-              ) : null}
+        {error ? (
+          <div
+            role="alert"
+            className="mb-4 rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive"
+          >
+            {error}
+          </div>
+        ) : null}
 
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-sm text-muted-foreground">Signed in on this browser</p>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">Signed in on this browser</p>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2.5 text-muted-foreground hover:text-[#c94b1f]"
+            onClick={() => {
+              window.location.href = addAccountUrl
+            }}
+          >
+            <Plus className="size-4" />
+            Add account
+          </Button>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" />
+            Loading accounts...
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {currentAccount ? (
+              isOAuthFlow ? (
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 rounded-full px-2.5 text-muted-foreground"
-                  onClick={() => {
-                    window.location.href = addAccountUrl
-                  }}
+                  variant="outline"
+                  className="h-auto w-full rounded-md px-4 py-4"
+                  disabled={switchingToken === "__current__"}
+                  onClick={() => void handleSelectAccount()}
                 >
-                  <Plus className="size-4" />
-                  Add account
-                </Button>
-              </div>
-
-              {loading ? (
-                <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
-                  <Loader2 className="size-4 animate-spin" />
-                  Loading accounts...
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {currentAccount ? (
-                    isOAuthFlow ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="h-auto w-full rounded-xl px-4 py-4"
-                        disabled={switchingToken === "__current__"}
-                        onClick={() => void handleSelectAccount()}
-                      >
-                        <div className="flex w-full items-center justify-between gap-3">
-                          <div className="flex min-w-0 items-center gap-3 text-left">
-                            <AccountAvatar
-                              image={currentAccount.user.image}
-                            />
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-medium text-foreground">
-                                {currentAccount.user.name || currentAccount.user.email || "Current account"}
-                              </p>
-                              <p className="truncate text-sm text-muted-foreground">
-                                {currentAccount.user.email || "Signed in"}
-                              </p>
-                            </div>
-                          </div>
-                          <span className="flex shrink-0 items-center gap-2 text-sm font-medium text-muted-foreground">
-                            {switchingToken === "__current__" ? (
-                              <Loader2 className="size-4 animate-spin" />
-                            ) : (
-                              <ArrowRightLeft className="size-4" />
-                            )}
-                            {switchingToken === "__current__" ? "Continuing..." : "Continue"}
-                          </span>
-                        </div>
-                      </Button>
-                    ) : (
-                      <div className="flex w-full items-center justify-between gap-3 rounded-xl border border-border/60 px-4 py-4">
-                        <div className="flex min-w-0 items-center gap-3 text-left">
-                          <AccountAvatar
-                            image={currentAccount.user.image}
-                          />
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-medium text-foreground">
-                              {currentAccount.user.name || currentAccount.user.email || "Current account"}
-                            </p>
-                            <p className="truncate text-sm text-muted-foreground">
-                              {currentAccount.user.email || "Signed in"}
-                            </p>
-                          </div>
-                        </div>
-                        <Badge variant="secondary" className="shrink-0">
-                          Current
-                        </Badge>
+                  <div className="flex w-full items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3 text-left">
+                      <AccountAvatar image={currentAccount.user.image} />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-foreground">
+                          {currentAccount.user.name || currentAccount.user.email || "Current account"}
+                        </p>
+                        <p className="truncate text-sm text-muted-foreground">
+                          {currentAccount.user.email || "Signed in"}
+                        </p>
                       </div>
-                    )
-                  ) : null}
-
-                  {otherAccounts.map((item) => {
-                    const token = item.session.token ?? ""
-                    const isSwitching = switchingToken === token
-
-                    return (
-                      <Button
-                        key={token || item.user.email || item.user.id}
-                        type="button"
-                        variant="outline"
-                        className="h-auto w-full rounded-xl px-4 py-4"
-                        disabled={!token || isSwitching}
-                        onClick={() => void handleSelectAccount(token)}
-                      >
-                        <div className="flex w-full items-center justify-between gap-3">
-                          <div className="flex min-w-0 items-center gap-3 text-left">
-                            <AccountAvatar
-                              image={item.user.image}
-                            />
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-medium text-foreground">
-                                {item.user.name || item.user.email || "Saved account"}
-                              </p>
-                              <p className="truncate text-sm text-muted-foreground">
-                                {item.user.email || "Saved on this browser"}
-                              </p>
-                            </div>
-                          </div>
-                          <span className="flex shrink-0 items-center gap-2 text-sm font-medium text-muted-foreground">
-                            {isSwitching ? (
-                              <Loader2 className="size-4 animate-spin" />
-                            ) : (
-                              <ArrowRightLeft className="size-4" />
-                            )}
-                            {isSwitching ? "Switching..." : "Use"}
-                          </span>
-                        </div>
-                      </Button>
-                    )
-                  })}
+                    </div>
+                    <span className="flex shrink-0 items-center gap-2 text-sm font-medium text-muted-foreground">
+                      {switchingToken === "__current__" ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <ArrowRightLeft className="size-4" />
+                      )}
+                      {switchingToken === "__current__" ? "Continuing..." : "Continue"}
+                    </span>
+                  </div>
+                </Button>
+              ) : (
+                <div className="flex w-full items-center justify-between gap-3 rounded-md border bg-card px-4 py-4">
+                  <div className="flex min-w-0 items-center gap-3 text-left">
+                    <AccountAvatar image={currentAccount.user.image} />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {currentAccount.user.name || currentAccount.user.email || "Current account"}
+                      </p>
+                      <p className="truncate text-sm text-muted-foreground">
+                        {currentAccount.user.email || "Signed in"}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant="secondary" className="shrink-0">
+                    Current
+                  </Badge>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
+              )
+            ) : null}
+
+            {otherAccounts.map((item) => {
+              const token = item.session.token ?? ""
+              const isSwitching = switchingToken === token
+
+              return (
+                <Button
+                  key={token || item.user.email || item.user.id}
+                  type="button"
+                  variant="outline"
+                  className="h-auto w-full rounded-md px-4 py-4"
+                  disabled={!token || isSwitching}
+                  onClick={() => void handleSelectAccount(token)}
+                >
+                  <div className="flex w-full items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3 text-left">
+                      <AccountAvatar image={item.user.image} />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-foreground">
+                          {item.user.name || item.user.email || "Saved account"}
+                        </p>
+                        <p className="truncate text-sm text-muted-foreground">
+                          {item.user.email || "Saved on this browser"}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="flex shrink-0 items-center gap-2 text-sm font-medium text-muted-foreground">
+                      {isSwitching ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <ArrowRightLeft className="size-4" />
+                      )}
+                      {isSwitching ? "Switching..." : "Use"}
+                    </span>
+                  </div>
+                </Button>
+              )
+            })}
+          </div>
+        )}
+      </AuthScreenShell>
     </LoginRequired>
   )
 }

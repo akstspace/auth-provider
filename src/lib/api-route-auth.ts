@@ -14,14 +14,30 @@ const isSameOriginUrl = (value: string | null, expectedOrigin: string) => {
   }
 };
 
+const getAllowedOrigins = () => {
+  const origins = new Set<string>();
+  origins.add(process.env.BETTER_AUTH_URL || "");
+  origins.add(process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "");
+  return Array.from(origins).filter(Boolean);
+};
+
 export const isSameOriginRequest = (request: NextRequest) => {
+  const allowedOrigins = getAllowedOrigins();
+
   const origin = request.headers.get("origin");
   if (origin) {
-    return origin === request.nextUrl.origin;
+    if (origin === request.nextUrl.origin) return true;
+    if (allowedOrigins.includes(origin)) return true;
+    return false;
   }
 
   const referer = request.headers.get("referer");
-  return isSameOriginUrl(referer, request.nextUrl.origin);
+  if (isSameOriginUrl(referer, request.nextUrl.origin)) return true;
+  if (referer && allowedOrigins.some((o) => isSameOriginUrl(referer, o))) {
+    return true;
+  }
+
+  return false;
 };
 
 export const getVerifiedSession = async (request: NextRequest) => {
@@ -62,7 +78,14 @@ export const getVerifiedAdminSession = async (request: NextRequest) => {
   const verified = await getVerifiedSession(request);
   if (verified.response) return verified;
 
-  if (!isPlatformAdmin(verified.session.user.role)) {
+  const role =
+    "role" in verified.session.user &&
+    (typeof verified.session.user.role === "string" ||
+      verified.session.user.role === null)
+      ? verified.session.user.role
+      : undefined;
+
+  if (!isPlatformAdmin(role)) {
     return {
       session: null,
       response: NextResponse.json(

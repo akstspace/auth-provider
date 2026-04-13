@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "motion/react"
 import { ChevronDown, Fingerprint } from "lucide-react"
+import { AuthScreenShell } from "@/components/auth/auth-screen-shell"
 import { TurnstileWidget } from "@/components/auth/turnstile-widget"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,9 +15,13 @@ import { getAuthErrorMessage } from "@/lib/auth-error"
 import { getAuthFlowParams, resolveCallbackUrl, withAuthFlow } from "@/lib/auth-flow"
 import { buildAuthErrorUrl, getBannedMessage, isBannedError } from "@/lib/banned-user"
 import { captchaEnabled, captchaHeader } from "@/lib/captcha"
-import { expandMotion, pageEnterMotion } from "@/lib/motion"
+import { expandMotion } from "@/lib/motion"
 
-export function LoginScreen() {
+interface LoginScreenProps {
+  emailPasswordAuthEnabled: boolean
+}
+
+export function LoginScreen({ emailPasswordAuthEnabled }: LoginScreenProps) {
   const [passkeyLoading, setPasskeyLoading] = useState(false)
   const [emailLoading, setEmailLoading] = useState(false)
   const [showPasswordForm, setShowPasswordForm] = useState(false)
@@ -160,20 +165,18 @@ export function LoginScreen() {
           callbackURL: callbackTarget,
           fetchOptions: {
             headers: captchaHeader(captchaToken),
-          },
-        },
-        {
-          onSuccess(context) {
-            if (context.data.twoFactorRedirect) {
-              router.push(
-                withAuthFlow("/2fa", {
-                  callbackUrl: callbackTarget,
-                  oauthQuery: flow.oauthQuery,
-                }),
-              )
-            } else {
-              router.push(callbackTarget)
-            }
+            onSuccess(context) {
+              if (context.data.twoFactorRedirect) {
+                router.push(
+                  withAuthFlow("/2fa", {
+                    callbackUrl: callbackTarget,
+                    oauthQuery: flow.oauthQuery,
+                  }),
+                )
+              } else {
+                router.push(callbackTarget)
+              }
+            },
           },
         },
       )
@@ -212,13 +215,9 @@ export function LoginScreen() {
   }
 
   return (
-    <div className="min-h-dvh bg-background text-foreground flex items-center justify-center p-4">
-      <motion.div
-        {...pageEnterMotion}
-        className="w-full max-w-sm"
-      >
+    <AuthScreenShell>
         <div className="mb-8">
-          <h1 className="text-2xl font-bold tracking-tight text-balance">Welcome back</h1>
+          <h1 className="text-2xl font-bold text-balance">Welcome back</h1>
           <p className="text-sm text-muted-foreground mt-1 text-pretty">
             {isAddAccountMode
               ? "Add another account for this browser and continue"
@@ -227,13 +226,13 @@ export function LoginScreen() {
         </div>
 
         {successMessage && (
-          <div role="status" className="text-sm text-emerald-500 text-center py-2 px-3 mb-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+          <div role="status" className="mb-4 rounded-lg border border-[color:var(--success)]/25 bg-[var(--success-soft)] px-3 py-2 text-center text-sm text-[color:var(--success)]">
             {successMessage}
           </div>
         )}
 
         {error && (
-          <div role="alert" className="text-sm text-red-500 dark:text-red-400 text-center py-1 mb-4">
+          <div role="alert" className="mb-4 rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-3 py-2 text-center text-sm text-destructive">
             {error}
           </div>
         )}
@@ -243,7 +242,7 @@ export function LoginScreen() {
             type="button"
             variant="outline"
             onClick={handleGoogleSignIn}
-            className="w-full gap-2 border-border/50"
+            className="w-full gap-2"
           >
             <svg className="size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -260,7 +259,7 @@ export function LoginScreen() {
             variant="outline"
             onClick={handlePasskeySignIn}
             disabled={passkeyLoading || emailLoading}
-            className="w-full gap-2 border-border/50"
+            className="w-full gap-2"
           >
             <Fingerprint className="size-4" />
             {passkeyLoading ? "Authenticating…" : "Sign in with Passkey"}
@@ -268,13 +267,14 @@ export function LoginScreen() {
           </Button>
         </div>
 
+        {emailPasswordAuthEnabled ? (
         <div className="mt-8">
           <button
             type="button"
             onClick={() => setShowPasswordForm(!showPasswordForm)}
             aria-expanded={showPasswordForm}
             aria-controls="loginPasswordFormPanel"
-            className="w-full flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="flex w-full items-center justify-center gap-1 text-xs text-muted-foreground transition-colors hover:text-[#c94b1f]"
           >
             <span>Or use email and password</span>
             {lastMethod === "email" && <LastUsedBadge />}
@@ -310,7 +310,10 @@ export function LoginScreen() {
               />
               <TurnstileWidget onTokenChange={setCaptchaToken} />
               <div className="flex items-center space-between mt-2">
-                <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-foreground hover:underline ml-auto">
+                <Link
+                  href="/forgot-password"
+                  className="ml-auto text-xs text-muted-foreground hover:text-[#c94b1f] hover:underline"
+                >
                   Forgot password?
                 </Link>
               </div>
@@ -325,6 +328,7 @@ export function LoginScreen() {
             </motion.form>
           )}
         </div>
+        ) : null}
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
@@ -333,12 +337,11 @@ export function LoginScreen() {
               callbackUrl: flow.callbackUrl,
               oauthQuery: flow.oauthQuery,
             })}
-            className="text-foreground font-medium hover:underline underline-offset-2"
+            className="font-medium text-foreground underline-offset-2 hover:text-[#c94b1f] hover:underline"
           >
             Create one
           </Link>
         </p>
-      </motion.div>
-    </div>
+    </AuthScreenShell>
   )
 }

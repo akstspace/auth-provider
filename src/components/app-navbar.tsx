@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useSyncExternalStore } from "react";
 import {
+  Coffee,
   ChevronDown,
   LogOut,
   Menu,
@@ -100,14 +101,14 @@ export function AppNavbar({
 
   return (
     <>
-      <nav className="sticky top-0 z-[60] border-b border-border/40 bg-background/80 backdrop-blur-lg">
+      <nav className="sticky top-0 z-[60] border-b bg-background">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             {onToggleSidebar ? (
               <button
                 type="button"
                 onClick={onToggleSidebar}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+                className="inline-flex size-9 items-center justify-center rounded-md border text-muted-foreground transition-colors hover:bg-accent hover:text-[#c94b1f]"
                 aria-label={`${isSidebarOpen ? "Close" : "Open"} ${sidebarLabel}`}
                 aria-pressed={isSidebarOpen}
               >
@@ -120,7 +121,7 @@ export function AppNavbar({
               </button>
             ) : null}
             <Link href="/org" className="flex items-center gap-2.5">
-              <span className="text-sm font-semibold text-foreground">
+              <span className="text-[15px] font-semibold text-foreground">
                 {appName}
               </span>
             </Link>
@@ -128,7 +129,7 @@ export function AppNavbar({
 
           <div className="flex items-center gap-2 sm:gap-3">
             {impersonating && !hideNavigationActions ? (
-              <span className="hidden rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-300 sm:inline-flex">
+              <span className="hidden rounded-md border px-2.5 py-1 text-xs font-medium text-[var(--warning)] bg-[var(--warning-soft)] sm:inline-flex">
                 Impersonating
               </span>
             ) : null}
@@ -137,10 +138,10 @@ export function AppNavbar({
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 px-2.5 py-1.5 text-sm text-foreground transition-colors hover:bg-muted/50"
+                  className="inline-flex items-center gap-2 rounded-md border bg-card px-2.5 py-1.5 text-sm text-foreground transition-colors hover:bg-accent"
                   aria-label="Open profile menu"
                 >
-                  <span className="flex size-8 items-center justify-center rounded-full bg-muted text-foreground">
+                  <span className="flex size-8 items-center justify-center rounded-md bg-muted text-foreground">
                     <User className="size-4" aria-hidden="true" />
                   </span>
                   <span className="hidden max-w-32 truncate text-sm font-medium sm:inline">
@@ -224,6 +225,10 @@ export function AppNavbar({
                     <Moon />
                     Dark
                   </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="chai">
+                    <Coffee />
+                    Chai
+                  </DropdownMenuRadioItem>
                   <DropdownMenuRadioItem value="system">
                     <Monitor />
                     System
@@ -250,7 +255,7 @@ export function AppNavbar({
       </nav>
 
       {adminError ? (
-        <div className="border-b border-border/40 bg-destructive/5">
+        <div className="border-b bg-[var(--danger-soft)]">
           <div className="mx-auto max-w-7xl px-4 py-2 text-sm text-destructive sm:px-6">
             {adminError}
           </div>

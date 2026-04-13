@@ -9,9 +9,12 @@ import {
     RefreshCw,
     Globe,
     AlertTriangle,
+    Settings2,
 } from "lucide-react"
 import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -113,6 +116,11 @@ export function OAuthClientDetailScreen({
     const [showRotatedSecret, setShowRotatedSecret] = useState(false)
     const [rotatedSecret, setRotatedSecret] = useState("")
     const [copiedSecret, setCopiedSecret] = useState(false)
+    
+    const [showEditClient, setShowEditClient] = useState(false)
+    const [editing, setEditing] = useState(false)
+    const [editName, setEditName] = useState("")
+    const [editRedirectUris, setEditRedirectUris] = useState("")
 
     useEffect(() => {
         const fetchClient = async () => {
@@ -179,16 +187,51 @@ export function OAuthClientDetailScreen({
         setTimeout(() => setCopiedSecret(false), 2000)
     }
 
+    const openEdit = () => {
+        setEditName(client?.name || "")
+        setEditRedirectUris(client?.redirectUris?.join('\n') || "")
+        setShowEditClient(true)
+    }
+
+    const handleEditClient = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setEditing(true)
+        setError("")
+        const uris = editRedirectUris.split("\n").map(u => u.trim()).filter(Boolean)
+        
+        try {
+            const result = await authClient.oauth2.updateClient({
+                client_id: clientId,
+                update: {
+                    name: editName,
+                    client_name: editName,
+                    redirectUris: uris,
+                    redirect_uris: uris,
+                } as any
+            })
+            if (result.error) {
+                setError(result.error.message || "Failed to update client")
+            } else {
+                setClient(normalizeOAuthClientDetail(result.data as Record<string, unknown>))
+                setShowEditClient(false)
+            }
+        } catch {
+            setError("Failed to update client")
+        } finally {
+            setEditing(false)
+        }
+    }
+
     if (loading) {
         return (
             <div className="space-y-8">
                 <div className="space-y-1">
-                    <h1 className="text-xl font-semibold tracking-tight text-balance sm:text-2xl">
+                    <h1 className="text-xl font-bold text-balance sm:text-2xl">
                         OAuth client
                     </h1>
                     <p className="text-sm text-muted-foreground">Loading client details…</p>
                 </div>
-                <div className="rounded-xl border border-border/50 bg-card p-6 space-y-4">
+                <div className="space-y-4 rounded-lg border bg-card p-6">
                     {Array.from({ length: 5 }).map((_, i) => (
                         <Skeleton key={i} className="h-6 w-full" />
                     ))}
@@ -201,13 +244,13 @@ export function OAuthClientDetailScreen({
         return (
             <div className="space-y-8">
                 <div className="space-y-1">
-                    <h1 className="text-xl font-semibold tracking-tight text-balance sm:text-2xl">
+                    <h1 className="text-xl font-bold text-balance sm:text-2xl">
                         OAuth client
                     </h1>
                     <p className="text-sm text-muted-foreground">Client not found.</p>
                 </div>
                 {error ? (
-                    <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                    <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                         {error}
                     </div>
                 ) : null}
@@ -218,20 +261,20 @@ export function OAuthClientDetailScreen({
     return (
         <div className="space-y-8">
             <div className="space-y-1">
-                <h1 className="text-xl font-semibold tracking-tight text-balance sm:text-2xl">
+                <h1 className="text-xl font-bold text-balance sm:text-2xl">
                     {client.name ?? "Unnamed client"}
                 </h1>
                 <p className="text-sm text-muted-foreground">Client ID: {client.clientId}</p>
             </div>
 
             {error ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {error}
                 </div>
             ) : null}
 
-            <div className="rounded-xl border border-border/50 bg-card">
-                <div className="flex flex-col gap-4 border-b border-border/50 p-6 sm:flex-row sm:items-start sm:justify-between">
+            <div className="rounded-lg border bg-card">
+                <div className="flex flex-col gap-4 border-b p-6 sm:flex-row sm:items-start sm:justify-between">
                     <div className="space-y-1">
                         <h2 className="text-lg font-medium">Client details</h2>
                         <p className="text-sm text-muted-foreground text-pretty">
@@ -239,6 +282,17 @@ export function OAuthClientDetailScreen({
                         </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={openEdit}
+                            className="gap-2"
+                        >
+                            <Settings2 className="size-4" />
+                            Edit Configuration
+                        </Button>
+
                         {!client.public ? (
                             <Button
                                 type="button"
@@ -278,7 +332,7 @@ export function OAuthClientDetailScreen({
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                                     <AlertDialogAction
                                         onClick={() => void handleDelete()}
-                                        className="bg-destructive text-white hover:bg-destructive/90"
+                                        className=""
                                     >
                                         Delete
                                     </AlertDialogAction>
@@ -341,7 +395,7 @@ export function OAuthClientDetailScreen({
                                     <Badge
                                         key={scope}
                                         variant="outline"
-                                        className="font-mono text-[11px] border-border/60"
+                                        className="border bg-muted font-mono text-[11px]"
                                     >
                                         {scope}
                                     </Badge>
@@ -365,11 +419,11 @@ export function OAuthClientDetailScreen({
                 </div>
             </div>
 
-            <Dialog open={showRotatedSecret} onOpenChange={() => {}}>
-                <DialogContent className="sm:max-w-lg" onPointerDownOutside={(e) => e.preventDefault()}>
+            <Dialog open={showRotatedSecret} onOpenChange={setShowRotatedSecret}>
+                <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <AlertTriangle className="size-4 text-amber-500" />
+                            <AlertTriangle className="size-4 text-[color:var(--warning)]" />
                             New client secret
                         </DialogTitle>
                         <DialogDescription className="text-pretty">
@@ -378,7 +432,7 @@ export function OAuthClientDetailScreen({
                     </DialogHeader>
                     <div className="pt-2">
                         <div className="flex items-center gap-2">
-                            <code className="flex-1 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-sm font-mono truncate">
+                            <code className="flex-1 rounded-lg border bg-muted px-3 py-2 text-sm font-mono truncate">
                                 {rotatedSecret}
                             </code>
                             <Button
@@ -389,7 +443,7 @@ export function OAuthClientDetailScreen({
                                 aria-label="Copy new client secret"
                             >
                                 {copiedSecret ? (
-                                    <Check className="size-3.5 text-emerald-500" />
+                                    <Check className="size-3.5 text-[color:var(--success)]" />
                                 ) : (
                                     <Copy className="size-3.5" />
                                 )}
@@ -401,6 +455,46 @@ export function OAuthClientDetailScreen({
                             Done
                         </Button>
                     </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={showEditClient} onOpenChange={setShowEditClient}>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>Edit Configuration</DialogTitle>
+                        <DialogDescription>
+                            Update the basic metadata and redirect URIs of your OAuth client.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleEditClient} className="space-y-4 pt-2">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Client name</label>
+                            <Input
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                placeholder="My Application"
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Redirect URIs</label>
+                            <Textarea
+                                value={editRedirectUris}
+                                onChange={(e) => setEditRedirectUris(e.target.value)}
+                                placeholder={"https://app.example.com/callback"}
+                                rows={4}
+                            />
+                            <p className="text-xs text-muted-foreground">One URI per line.</p>
+                        </div>
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setShowEditClient(false)}>
+                                Cancel
+                            </Button>
+                            <Button type="submit" disabled={editing}>
+                                {editing ? "Saving…" : "Save changes"}
+                            </Button>
+                        </DialogFooter>
+                    </form>
                 </DialogContent>
             </Dialog>
         </div>

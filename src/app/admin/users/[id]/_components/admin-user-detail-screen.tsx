@@ -1,12 +1,14 @@
 "use client"
 
 import { type FormEvent, useEffect, useRef, useState } from "react"
+import { format } from "date-fns"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Ban, CircleOff, Copy, KeyRound, Loader2, Pencil, Shield, Trash2, Undo2, UserCog } from "lucide-react"
+import { ArrowLeft, Ban, CalendarDays, CircleOff, Copy, KeyRound, Loader2, Pencil, Shield, Trash2, Undo2, UserCog } from "lucide-react"
 import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardDescription, CardTitle } from "@/components/ui/card"
+import { Calendar } from "@/components/ui/calendar"
 import {
     Dialog,
     DialogContent,
@@ -16,8 +18,16 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Textarea } from "@/components/ui/textarea"
-import { AdminPageHeader, AdminStatusBadge } from "@/components/admin/admin-shell"
+import {
+    AdminPageHeader,
+    AdminSectionCard,
+    AdminSectionContent,
+    AdminSectionFooter,
+    AdminSectionHeader,
+    AdminStatusBadge,
+} from "@/components/admin/admin-shell"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
     Table,
@@ -68,6 +78,22 @@ const parseJsonPatch = (value: string) => {
     }
 }
 
+const DEFAULT_BAN_TIME = "12:00"
+
+const toTimeInputValue = (value: Date) =>
+    `${String(value.getHours()).padStart(2, "0")}:${String(value.getMinutes()).padStart(2, "0")}`
+
+const isValidTimeInput = (value: string) => /^([01]\d|2[0-3]):([0-5]\d)$/.test(value)
+
+const getBanExpiryDateTime = (date: Date, time: string) => {
+    if (!isValidTimeInput(time)) return null
+
+    const [hours, minutes] = time.split(":").map(Number)
+    const next = new Date(date)
+    next.setHours(hours, minutes, 0, 0)
+    return next
+}
+
 export function AdminUserDetailScreen() {
     const params = useParams<{ id: string }>()
     const router = useRouter()
@@ -89,7 +115,8 @@ export function AdminUserDetailScreen() {
     const [roleInput, setRoleInput] = useState("user")
     const [password, setPassword] = useState("")
     const [banReason, setBanReason] = useState("")
-    const [banExpiresIn, setBanExpiresIn] = useState("")
+    const [banExpiryDate, setBanExpiryDate] = useState<Date | undefined>(undefined)
+    const [banExpiryTime, setBanExpiryTime] = useState(DEFAULT_BAN_TIME)
     const [savingProfile, setSavingProfile] = useState(false)
     const [savingRole, setSavingRole] = useState(false)
     const [savingPassword, setSavingPassword] = useState(false)
@@ -131,7 +158,15 @@ export function AdminUserDetailScreen() {
         setProfileEmailVerified(Boolean(resolvedUser?.emailVerified))
         setRoleInput(formatRoleList(resolvedUser?.role) || "user")
         setBanReason(resolvedUser?.banReason ?? "")
-        setBanExpiresIn("")
+        const existingBanExpiry =
+            resolvedUser?.banExpires ? new Date(resolvedUser.banExpires) : null
+        if (existingBanExpiry && !Number.isNaN(existingBanExpiry.getTime()) && existingBanExpiry.getTime() > Date.now()) {
+            setBanExpiryDate(existingBanExpiry)
+            setBanExpiryTime(toTimeInputValue(existingBanExpiry))
+        } else {
+            setBanExpiryDate(undefined)
+            setBanExpiryTime(DEFAULT_BAN_TIME)
+        }
         setPassword("")
         setActionError("")
         setActionSuccess("")
@@ -294,11 +329,27 @@ export function AdminUserDetailScreen() {
                 : "This revokes all active sessions and blocks the user from signing in until you unban them or the ban expires.",
             actionLabel: "Ban user",
             onConfirm: async () => {
-                const trimmedExpires = banExpiresIn.trim()
-                const numericExpiry = trimmedExpires ? Number(trimmedExpires) : null
-                if (numericExpiry !== null && (!Number.isFinite(numericExpiry) || numericExpiry <= 0)) {
-                    setActionError("Ban expiry must be a positive number of seconds.")
-                    return
+                let numericExpiry: number | null = null
+
+                if (banExpiryDate) {
+                    if (!isValidTimeInput(banExpiryTime)) {
+                        setActionError("Choose a valid suspension time.")
+                        return
+                    }
+
+                    const expiryDate = getBanExpiryDateTime(banExpiryDate, banExpiryTime)
+                    if (!expiryDate) {
+                        setActionError("Choose a valid suspension time.")
+                        return
+                    }
+
+                    const secondsUntilExpiry = Math.ceil((expiryDate.getTime() - Date.now()) / 1000)
+                    if (secondsUntilExpiry <= 0) {
+                        setActionError("Suspension end time must be in the future.")
+                        return
+                    }
+
+                    numericExpiry = secondsUntilExpiry
                 }
 
                 const result = await authClient.admin.banUser({
@@ -400,18 +451,18 @@ export function AdminUserDetailScreen() {
             />
 
             {error ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {error}
                 </div>
             ) : null}
 
             {actionError ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {actionError}
                 </div>
             ) : null}
             {actionSuccess ? (
-                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300">
+                <div className="rounded-lg border border-[color:var(--success)]/25 bg-[var(--success-soft)] px-4 py-3 text-sm text-[color:var(--success)]">
                     {actionSuccess}
                 </div>
             ) : null}
@@ -424,17 +475,17 @@ export function AdminUserDetailScreen() {
                 </div>
             ) : !user ? null : (
                 <>
-                    <Card className="border-border/50 bg-card">
-                        <CardHeader>
+                    <AdminSectionCard>
+                        <AdminSectionHeader>
                             <CardTitle className="text-lg font-medium">Account summary</CardTitle>
                             <CardDescription className="text-sm leading-6 text-pretty">
                                 Primary identity and high-risk actions live here.
                             </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-5">
+                        </AdminSectionHeader>
+                        <AdminSectionContent className="space-y-5">
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                 <div className="space-y-1">
-                                    <h2 className="text-lg font-semibold tracking-tight">{user.name}</h2>
+                                    <h2 className="text-lg font-semibold">{user.name}</h2>
                                     <p className="text-sm leading-6 text-muted-foreground">{user.email}</p>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
@@ -453,7 +504,7 @@ export function AdminUserDetailScreen() {
                             </div>
 
                             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                                <div className="rounded-lg border border-border/50 bg-card p-4">
+                                <div className="rounded-lg border bg-background p-4">
                                     <p className="text-xs text-muted-foreground">User ID</p>
                                     <div className="mt-2 flex items-center gap-2">
                                         <code className="min-w-0 flex-1 truncate text-xs">{user.id}</code>
@@ -468,15 +519,15 @@ export function AdminUserDetailScreen() {
                                         </Button>
                                     </div>
                                 </div>
-                                <div className="rounded-lg border border-border/50 bg-card p-4">
+                                <div className="rounded-lg border bg-background p-4">
                                     <p className="text-xs text-muted-foreground">Created</p>
                                     <p className="mt-2 text-sm tabular-nums">{formatDateTime(user.createdAt)}</p>
                                 </div>
-                                <div className="rounded-lg border border-border/50 bg-card p-4">
+                                <div className="rounded-lg border bg-background p-4">
                                     <p className="text-xs text-muted-foreground">Updated</p>
                                     <p className="mt-2 text-sm tabular-nums">{formatDateTime(user.updatedAt)}</p>
                                 </div>
-                                <div className="rounded-lg border border-border/50 bg-card p-4">
+                                <div className="rounded-lg border bg-background p-4">
                                     <p className="text-xs text-muted-foreground">Ban expires</p>
                                     <p className="mt-2 text-sm tabular-nums">
                                         {user.banExpires ? formatDateTime(user.banExpires) : "Never"}
@@ -485,12 +536,12 @@ export function AdminUserDetailScreen() {
                             </div>
 
                             {user.banned && user.banReason ? (
-                                <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
+                                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] p-3 text-sm text-destructive">
                                     Ban reason: {user.banReason}
                                 </div>
                             ) : null}
 
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap items-center gap-3">
                                 <Button variant="outline" size="sm" onClick={() => void handleImpersonate()} disabled={isSelf}>
                                     <UserCog className="size-4" />
                                     <span className="ml-2">Impersonate</span>
@@ -516,18 +567,18 @@ export function AdminUserDetailScreen() {
                                     Better Auth blocks self-impersonation, self-bans, and self-deletion, so those actions are disabled here.
                                 </p>
                             ) : null}
-                        </CardContent>
-                    </Card>
+                        </AdminSectionContent>
+                    </AdminSectionCard>
 
                     <div className="grid gap-4 xl:grid-cols-2">
-                        <Card className="flex h-full flex-col border-border/50 bg-card">
-                            <CardHeader>
+                        <AdminSectionCard className="flex h-full flex-col">
+                            <AdminSectionHeader>
                                 <CardTitle className="text-lg font-medium">Profile</CardTitle>
                                 <CardDescription className="text-sm leading-6 text-pretty">
                                     Name, email, image, and verification state.
                                 </CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex flex-1 flex-col gap-4">
+                            </AdminSectionHeader>
+                            <AdminSectionContent className="flex flex-1 flex-col gap-4">
                                 <dl className="space-y-3 text-sm">
                                     <div className="flex items-start justify-between gap-4">
                                         <dt className="text-muted-foreground">Name</dt>
@@ -542,59 +593,59 @@ export function AdminUserDetailScreen() {
                                         <dd className="max-w-[60%] truncate text-right">{user.image || "Not set"}</dd>
                                     </div>
                                 </dl>
-                            </CardContent>
-                            <CardFooter className="border-t border-border/50 pt-4">
+                            </AdminSectionContent>
+                            <AdminSectionFooter>
                                 <Button type="button" variant="outline" size="sm" onClick={() => setProfileDialogOpen(true)}>
                                     <Pencil className="size-4" />
                                     <span className="ml-2">Edit profile</span>
                                 </Button>
-                            </CardFooter>
-                        </Card>
+                            </AdminSectionFooter>
+                        </AdminSectionCard>
 
-                        <Card className="flex h-full flex-col border-border/50 bg-card">
-                            <CardHeader>
+                        <AdminSectionCard className="flex h-full flex-col">
+                            <AdminSectionHeader>
                                 <CardTitle className="text-lg font-medium">Roles</CardTitle>
                                 <CardDescription className="text-sm leading-6 text-pretty">
                                     Review and change the user’s Better Auth role set.
                                 </CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex flex-1 flex-col gap-4">
+                            </AdminSectionHeader>
+                            <AdminSectionContent className="flex flex-1 flex-col gap-4">
                                 <p className="text-sm">{formatRoleList(user.role) || "user"}</p>
-                            </CardContent>
-                            <CardFooter className="border-t border-border/50 pt-4">
+                            </AdminSectionContent>
+                            <AdminSectionFooter>
                                 <Button type="button" variant="outline" size="sm" onClick={() => setRolesDialogOpen(true)}>
                                     <Shield className="size-4" />
                                     <span className="ml-2">Manage roles</span>
                                 </Button>
-                            </CardFooter>
-                        </Card>
+                            </AdminSectionFooter>
+                        </AdminSectionCard>
 
-                        <Card className="flex h-full flex-col border-border/50 bg-card">
-                            <CardHeader>
+                        <AdminSectionCard className="flex h-full flex-col">
+                            <AdminSectionHeader>
                                 <CardTitle className="text-lg font-medium">Password</CardTitle>
                                 <CardDescription className="text-sm leading-6 text-pretty">
                                     Reset the credential password without leaving this page.
                                 </CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex flex-1 flex-col gap-4">
+                            </AdminSectionHeader>
+                            <AdminSectionContent className="flex flex-1 flex-col gap-4">
                                 <p className="text-sm text-muted-foreground">No password is shown here for security reasons.</p>
-                            </CardContent>
-                            <CardFooter className="border-t border-border/50 pt-4">
+                            </AdminSectionContent>
+                            <AdminSectionFooter>
                                 <Button type="button" variant="outline" size="sm" onClick={() => setPasswordDialogOpen(true)}>
                                     <KeyRound className="size-4" />
                                     <span className="ml-2">Update password</span>
                                 </Button>
-                            </CardFooter>
-                        </Card>
+                            </AdminSectionFooter>
+                        </AdminSectionCard>
 
-                        <Card className="flex h-full flex-col border-border/50 bg-card">
-                            <CardHeader>
+                        <AdminSectionCard className="flex h-full flex-col">
+                            <AdminSectionHeader>
                                 <CardTitle className="text-lg font-medium">Suspension</CardTitle>
                                 <CardDescription className="text-sm leading-6 text-pretty">
                                     Manage bans, reasons, and optional expiry.
                                 </CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex flex-1 flex-col gap-4">
+                            </AdminSectionHeader>
+                            <AdminSectionContent className="flex flex-1 flex-col gap-4">
                                 <dl className="space-y-3 text-sm">
                                     <div className="flex items-start justify-between gap-4">
                                         <dt className="text-muted-foreground">Status</dt>
@@ -609,32 +660,32 @@ export function AdminUserDetailScreen() {
                                         <dd>{user.banExpires ? formatDateTime(user.banExpires) : "Never"}</dd>
                                     </div>
                                 </dl>
-                            </CardContent>
-                            <CardFooter className="border-t border-border/50 pt-4">
+                            </AdminSectionContent>
+                            <AdminSectionFooter>
                                 <Button type="button" variant="outline" size="sm" onClick={() => setSuspensionDialogOpen(true)}>
                                     <Ban className="size-4" />
                                     <span className="ml-2">Manage suspension</span>
                                 </Button>
-                            </CardFooter>
-                        </Card>
+                            </AdminSectionFooter>
+                        </AdminSectionCard>
                     </div>
 
-                    <Card className="border-border/50 bg-card">
-                        <CardHeader>
+                    <AdminSectionCard>
+                        <AdminSectionHeader>
                             <CardTitle className="text-lg font-medium">Sessions</CardTitle>
                             <CardDescription className="text-sm leading-6 text-pretty">
                                 Review active sessions and revoke individual devices only when needed.
                             </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
+                        </AdminSectionHeader>
+                        <AdminSectionContent className="space-y-3">
                             {sessions.length === 0 ? (
-                                <div className="rounded-xl border border-dashed border-border/70 bg-muted/20 p-6 text-sm text-muted-foreground">
+                                <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
                                     No active sessions found.
                                 </div>
                             ) : (
                                 <>
                                     <div className="hidden md:block">
-                                        <div className="overflow-x-auto rounded-xl border border-border/60">
+                                        <div className="overflow-x-auto rounded-lg border">
                                             <Table className="min-w-[880px]">
                                                 <TableHeader>
                                                     <TableRow>
@@ -676,7 +727,7 @@ export function AdminUserDetailScreen() {
 
                                     <div className="space-y-3 md:hidden">
                                         {sessions.map((sessionRecord) => (
-                                            <div key={sessionRecord.id} className="rounded-xl border border-border/60 p-4">
+                                            <div key={sessionRecord.id} className="rounded-lg border bg-background p-4">
                                                 <div className="flex flex-wrap gap-2">
                                                     {sessionRecord.impersonatedBy ? (
                                                         <AdminStatusBadge label="Impersonated" tone="warning" />
@@ -693,8 +744,8 @@ export function AdminUserDetailScreen() {
                                     </div>
                                 </>
                             )}
-                        </CardContent>
-                    </Card>
+                        </AdminSectionContent>
+                    </AdminSectionCard>
                 </>
             )}
 
@@ -712,7 +763,7 @@ export function AdminUserDetailScreen() {
                                 void runConfirmedAction()
                             }}
                             disabled={confirming}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            className=""
                         >
                             {confirming ? <Loader2 className="size-4 animate-spin" /> : null}
                             <span className={confirming ? "ml-2" : ""}>{confirmState?.actionLabel}</span>
@@ -751,7 +802,7 @@ export function AdminUserDetailScreen() {
                             <Textarea id="profilePatch" value={profilePatch} onChange={(event) => setProfilePatch(event.target.value)} placeholder='{"department":"Operations"}' />
                         </div>
 
-                        <label className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
+                        <label className="flex items-start gap-3 rounded-lg border bg-muted p-3 text-sm">
                             <input
                                 type="checkbox"
                                 checked={profileEmailVerified}
@@ -830,10 +881,65 @@ export function AdminUserDetailScreen() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="banExpiresIn" className="text-sm font-medium">Ban expiry in seconds</label>
-                            <Input id="banExpiresIn" type="number" min="1" value={banExpiresIn} onChange={(event) => setBanExpiresIn(event.target.value)} placeholder="604800" />
+                            <label className="text-sm font-medium">Suspension ends</label>
+                            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_144px_auto]">
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="w-full justify-between"
+                                        >
+                                            <span className="truncate">
+                                                {banExpiryDate ? format(banExpiryDate, "PPP") : "Pick a date"}
+                                            </span>
+                                            <CalendarDays className="size-4 shrink-0 text-muted-foreground" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent align="start" className="w-auto">
+                                        <Calendar
+                                            mode="single"
+                                            selected={banExpiryDate}
+                                            onSelect={setBanExpiryDate}
+                                            disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+
+                                <Input
+                                    type="time"
+                                    step="60"
+                                    value={banExpiryTime}
+                                    onChange={(event) => setBanExpiryTime(event.target.value)}
+                                    disabled={!banExpiryDate}
+                                />
+
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                        setBanExpiryDate(undefined)
+                                        setBanExpiryTime(DEFAULT_BAN_TIME)
+                                    }}
+                                    disabled={!banExpiryDate}
+                                    className="w-full sm:w-auto"
+                                >
+                                    Clear
+                                </Button>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {banExpiryDate
+                                    ? isValidTimeInput(banExpiryTime)
+                                      ? `This suspension will end on ${format(
+                                          getBanExpiryDateTime(banExpiryDate, banExpiryTime) as Date,
+                                          "PPP p",
+                                        )}.`
+                                      : "Choose a valid time for the selected suspension date."
+                                    : "Leave this empty to suspend the account until it is manually restored."}
+                            </p>
                         </div>
-                        <div className="rounded-lg border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
+                        <div className="rounded-lg border bg-muted p-4 text-sm text-muted-foreground">
                             {user?.banned ? (
                                 <p className="text-pretty">
                                     This account is currently suspended.

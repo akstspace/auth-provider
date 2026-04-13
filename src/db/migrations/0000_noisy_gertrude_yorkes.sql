@@ -153,6 +153,15 @@ CREATE TABLE "verification" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "invite_allowlist_entry" (
+	"id" text PRIMARY KEY NOT NULL,
+	"kind" text NOT NULL,
+	"value" text NOT NULL,
+	"created_by_user_id" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "oauth_scope_definition" (
 	"scope_key" text PRIMARY KEY NOT NULL,
 	"label" text NOT NULL,
@@ -160,6 +169,16 @@ CREATE TABLE "oauth_scope_definition" (
 	"is_system" boolean DEFAULT false NOT NULL,
 	"allow_self_service" boolean DEFAULT false NOT NULL,
 	"is_active" boolean DEFAULT true NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "platform_config" (
+	"id" text PRIMARY KEY NOT NULL,
+	"invite_only_enabled" boolean DEFAULT false NOT NULL,
+	"allow_user_client_creation" boolean DEFAULT true NOT NULL,
+	"email_password_auth_enabled" boolean DEFAULT true NOT NULL,
+	"allow_dynamic_client_registration" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
@@ -178,6 +197,7 @@ ALTER TABLE "oauth_refresh_token" ADD CONSTRAINT "oauth_refresh_token_user_id_us
 ALTER TABLE "passkey" ADD CONSTRAINT "passkey_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "two_factor" ADD CONSTRAINT "two_factor_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "invite_allowlist_entry" ADD CONSTRAINT "invite_allowlist_entry_created_by_user_id_user_id_fk" FOREIGN KEY ("created_by_user_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "account_userId_idx" ON "account" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "passkey_userId_idx" ON "passkey" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "passkey_credentialID_idx" ON "passkey" USING btree ("credential_id");--> statement-breakpoint
@@ -185,5 +205,7 @@ CREATE INDEX "session_userId_idx" ON "session" USING btree ("user_id");--> state
 CREATE INDEX "twoFactor_secret_idx" ON "two_factor" USING btree ("secret");--> statement-breakpoint
 CREATE INDEX "twoFactor_userId_idx" ON "two_factor" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "verification_identifier_idx" ON "verification" USING btree ("identifier");--> statement-breakpoint
+CREATE INDEX "invite_allowlist_entry_kind_idx" ON "invite_allowlist_entry" USING btree ("kind");--> statement-breakpoint
+CREATE UNIQUE INDEX "invite_allowlist_entry_kind_value_uidx" ON "invite_allowlist_entry" USING btree ("kind","value");--> statement-breakpoint
 CREATE INDEX "oauth_scope_definition_is_active_idx" ON "oauth_scope_definition" USING btree ("is_active");--> statement-breakpoint
 CREATE INDEX "oauth_scope_definition_allow_self_service_idx" ON "oauth_scope_definition" USING btree ("allow_self_service");
