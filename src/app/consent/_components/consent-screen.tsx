@@ -113,15 +113,15 @@ export function ConsentScreen() {
     const appName = clientInfo?.name ?? "An application"
 
     return (
-        <div className="min-h-dvh bg-background text-foreground flex items-center justify-center p-4">
+        <div className="flex min-h-dvh items-center justify-center bg-background p-4 text-foreground">
             <motion.div {...pageEnterMotion} className="w-full max-w-sm">
                 <div className="mb-6">
                     <div className="flex items-center gap-2.5 mb-3">
-                        <div className="flex items-center justify-center size-9 rounded-lg bg-muted">
+                        <div className="flex items-center justify-center size-9 rounded-md bg-[var(--icon-soft)]">
                             <Shield className="size-4 text-foreground" />
                         </div>
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight text-balance">Authorize access</h1>
+                    <h1 className="text-2xl font-bold text-balance">Authorize access</h1>
                     <p className="text-sm text-muted-foreground mt-1 text-pretty">
                         Review the permissions below before continuing.
                     </p>
@@ -130,13 +130,13 @@ export function ConsentScreen() {
                 {error ? (
                     <div
                         role="alert"
-                        className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive mb-4"
+                        className="mb-4 rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive"
                     >
                         {error}
                     </div>
                 ) : null}
 
-                <Card className="border-border/50 bg-card">
+                <Card className="bg-card">
                     <CardHeader className="pb-3">
                         {loading ? (
                             <Skeleton className="h-5 w-40" />
@@ -157,7 +157,7 @@ export function ConsentScreen() {
                         ) : (
                             <>
                                 <div className="space-y-2">
-                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                    <p className="text-xs font-semibold uppercase text-muted-foreground">
                                         Permissions requested
                                     </p>
                                     <div className="space-y-1.5">
@@ -166,9 +166,9 @@ export function ConsentScreen() {
                                             return (
                                                 <div
                                                     key={scope}
-                                                    className="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5"
+                                                    className="flex items-center gap-3 rounded-lg border bg-muted px-3 py-2.5"
                                                 >
-                                                    <Check className="size-3.5 text-emerald-500 shrink-0" />
+                                                    <Check className="size-3.5 shrink-0 text-[color:var(--success)]" />
                                                     <div className="min-w-0">
                                                         <p className="text-sm font-medium truncate">
                                                             {info?.label ?? scope}
@@ -187,7 +187,7 @@ export function ConsentScreen() {
 
                                 {clientInfo?.uri ? (
                                     <div className="flex items-center gap-2 pt-1">
-                                        <Badge variant="outline" className="text-[11px] font-normal border-border/60 bg-muted/70">
+                                        <Badge variant="outline" className="bg-muted text-[11px] font-normal">
                                             {getHostname(clientInfo.uri)}
                                         </Badge>
                                     </div>

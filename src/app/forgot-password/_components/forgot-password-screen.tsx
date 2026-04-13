@@ -2,15 +2,14 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { motion } from "motion/react"
 import { authClient } from "@/lib/auth-client"
+import { AuthScreenShell } from "@/components/auth/auth-screen-shell"
 import { TurnstileWidget } from "@/components/auth/turnstile-widget"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { KeyRound } from "lucide-react"
 import { getAuthErrorMessage } from "@/lib/auth-error"
 import { captchaEnabled, captchaHeader } from "@/lib/captcha"
-import { pageEnterMotion } from "@/lib/motion"
 
 export function ForgotPasswordScreen() {
     const [email, setEmail] = useState("")
@@ -53,25 +52,21 @@ export function ForgotPasswordScreen() {
     }
 
     return (
-        <div className="min-h-dvh bg-background flex items-center justify-center p-4 text-foreground">
-            <motion.div
-                {...pageEnterMotion}
-                className="w-full max-w-sm"
-            >
+        <AuthScreenShell>
                 <div className="mb-8 text-center">
                     <div className="flex justify-center mb-4">
-                        <div className="flex items-center justify-center size-10 rounded-full bg-muted">
+                        <div className="flex items-center justify-center size-10 rounded-md bg-[var(--icon-soft)]">
                             <KeyRound className="size-5" />
                         </div>
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight">Forgot password?</h1>
+                    <h1 className="text-2xl font-bold text-balance">Forgot password?</h1>
                     <p className="text-sm text-muted-foreground mt-2 text-pretty">
                         Enter your email to receive a password reset link.
                     </p>
                 </div>
 
-                {error && <div className="text-sm text-destructive text-center mb-4">{error}</div>}
-                {message && <div className="text-sm text-emerald-500 text-center mb-4">{message}</div>}
+                {error && <div className="mb-4 rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-3 py-2 text-center text-sm text-destructive">{error}</div>}
+                {message && <div className="mb-4 rounded-lg border border-[color:var(--success)]/25 bg-[var(--success-soft)] px-3 py-2 text-center text-sm text-[color:var(--success)]">{message}</div>}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -95,11 +90,10 @@ export function ForgotPasswordScreen() {
 
                 <p className="mt-8 text-center text-sm text-muted-foreground">
                     Remember your password?{" "}
-                    <Link href="/login" className="text-foreground font-medium hover:underline">
+                    <Link href="/login" className="font-medium text-foreground hover:text-[#c94b1f] hover:underline">
                         Sign in
                     </Link>
                 </p>
-            </motion.div>
-        </div>
+        </AuthScreenShell>
     )
 }

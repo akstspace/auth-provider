@@ -1,17 +1,15 @@
 "use client"
 
-import { useState, Suspense } from "react"
+import { useState } from "react"
+import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { motion } from "motion/react"
 import { authClient } from "@/lib/auth-client"
-import { Button } from "@/components/ui/button"
+import { AuthScreenShell } from "@/components/auth/auth-screen-shell"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { LockKeyhole, XCircle } from "lucide-react"
-import Link from "next/link"
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
 import { getAuthErrorMessage } from "@/lib/auth-error"
-import { pageEnterMotion } from "@/lib/motion"
+import { cn } from "@/lib/utils"
 
 export function ResetPasswordScreen() {
     const [password, setPassword] = useState("")
@@ -26,18 +24,14 @@ export function ResetPasswordScreen() {
     // If the link was invalid/expired, Better Auth redirects with ?error=INVALID_TOKEN
     if (tokenError || !token) {
         return (
-            <div className="min-h-dvh bg-background flex items-center justify-center p-4 text-foreground">
-                <motion.div
-                    {...pageEnterMotion}
-                    className="w-full max-w-sm"
-                >
+            <AuthScreenShell>
                     <div className="mb-8 text-center">
                         <div className="flex justify-center mb-4">
-                            <div className="flex items-center justify-center size-10 rounded-full bg-destructive/10">
+                            <div className="flex items-center justify-center size-10 rounded-md bg-[var(--danger-soft)]">
                                 <XCircle className="size-5 text-destructive" />
                             </div>
                         </div>
-                        <h1 className="text-2xl font-bold tracking-tight">Invalid reset link</h1>
+                        <h1 className="text-2xl font-bold text-balance">Invalid reset link</h1>
                         <p className="text-sm text-muted-foreground mt-2 text-pretty">
                             This password reset link is invalid or has expired. Please request a new one.
                         </p>
@@ -45,8 +39,7 @@ export function ResetPasswordScreen() {
                     <Link href="/forgot-password" className={cn(buttonVariants(), "w-full")}>
                         Request new link
                     </Link>
-                </motion.div>
-            </div>
+            </AuthScreenShell>
         )
     }
 
@@ -74,24 +67,20 @@ export function ResetPasswordScreen() {
     }
 
     return (
-        <div className="min-h-dvh bg-background flex items-center justify-center p-4 text-foreground">
-            <motion.div
-                {...pageEnterMotion}
-                className="w-full max-w-sm"
-            >
+        <AuthScreenShell>
                 <div className="mb-8 text-center">
                     <div className="flex justify-center mb-4">
-                        <div className="flex items-center justify-center size-10 rounded-full bg-muted">
+                        <div className="flex items-center justify-center size-10 rounded-md bg-[var(--icon-soft)]">
                             <LockKeyhole className="size-5" />
                         </div>
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight">Set new password</h1>
+                    <h1 className="text-2xl font-bold text-balance">Set new password</h1>
                     <p className="text-sm text-muted-foreground mt-2 text-pretty">
                         Enter your new password below to secure your account.
                     </p>
                 </div>
 
-                {error && <div className="text-sm text-destructive text-center mb-4">{error}</div>}
+                {error && <div className="mb-4 rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-3 py-2 text-center text-sm text-destructive">{error}</div>}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -108,7 +97,6 @@ export function ResetPasswordScreen() {
                         {loading ? "Resetting..." : "Reset password"}
                     </Button>
                 </form>
-            </motion.div>
-        </div>
+        </AuthScreenShell>
     )
 }

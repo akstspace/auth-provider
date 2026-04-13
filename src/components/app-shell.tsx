@@ -77,7 +77,7 @@ export function AppShellLayout({
 
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-black/40 transition-opacity duration-200 lg:hidden",
+          "fixed inset-0 z-40 bg-[#221a13]/35 transition-opacity duration-200 lg:hidden",
           isSidebarOpen ? "opacity-100" : "pointer-events-none opacity-0",
         )}
         onClick={() => setIsSidebarOpen(false)}
@@ -86,7 +86,7 @@ export function AppShellLayout({
 
       <aside
         className={cn(
-          "fixed top-14 bottom-0 left-0 z-50 w-80 max-w-[85vw] border-r border-border/60 bg-background px-4 py-5 shadow-xl transition-transform duration-200 ease-out lg:hidden",
+          "fixed top-14 bottom-0 left-0 z-50 w-80 max-w-[85vw] border-r bg-background px-4 py-5 shadow-[0px_25px_50px_-12px_rgba(0,0,0,0.20)] transition-transform duration-200 ease-out lg:hidden",
           isSidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
         aria-label="Navigation"
@@ -106,7 +106,7 @@ function SidebarSection({
 }) {
   return (
     <section className="space-y-2">
-      <h2 className="px-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <h2 className="px-3 text-xs font-semibold uppercase text-muted-foreground">
         {title}
       </h2>
       <div className="space-y-1">{children}</div>
@@ -172,7 +172,7 @@ export function AppShellUtilitySection({
       ) : null}
 
       {adminError ? (
-        <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div className="rounded-lg border bg-[var(--danger-soft)] px-3 py-2 text-sm text-destructive">
           {adminError}
         </div>
       ) : null}

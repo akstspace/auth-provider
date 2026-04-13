@@ -200,12 +200,12 @@ export function AdminCreateOAuthClientScreen() {
             />
 
             {error ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {error}
                 </div>
             ) : null}
 
-            <Card className="border-border/50 bg-card xl:max-w-4xl">
+            <Card className="xl:max-w-4xl">
                 <CardHeader>
                     <CardTitle className="text-lg font-medium">New OAuth client</CardTitle>
                     <CardDescription className="text-sm leading-6 text-pretty">
@@ -247,7 +247,7 @@ export function AdminCreateOAuthClientScreen() {
                                 {availableScopes.map((scope) => (
                                     <label
                                         key={scope.key}
-                                        className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-3 text-sm cursor-pointer hover:bg-muted/40 transition-colors"
+                                        className="flex cursor-pointer items-start gap-3 rounded-lg border bg-muted px-3 py-3 text-sm transition-colors hover:bg-accent"
                                     >
                                         <input
                                             type="checkbox"
@@ -258,7 +258,7 @@ export function AdminCreateOAuthClientScreen() {
                                         <div className="space-y-1">
                                             <div className="flex items-center gap-2">
                                                 <span className="text-sm font-medium">{scope.label}</span>
-                                                <code className="rounded bg-muted px-1.5 py-0.5 text-[11px]">
+                                                <code className="rounded-md border bg-background px-1.5 py-0.5 text-[11px]">
                                                     {scope.key}
                                                 </code>
                                             </div>
@@ -277,7 +277,7 @@ export function AdminCreateOAuthClientScreen() {
                         <div className="space-y-2">
                             <p className="text-sm font-medium">Client type &amp; trust</p>
                             <div className="space-y-2">
-                                <label className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
+                                <label className="flex items-start gap-3 rounded-lg border bg-muted p-3 text-sm">
                                     <input
                                         type="checkbox"
                                         checked={isPublic}
@@ -291,7 +291,7 @@ export function AdminCreateOAuthClientScreen() {
                                         </p>
                                     </div>
                                 </label>
-                                <label className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
+                                <label className="flex items-start gap-3 rounded-lg border bg-muted p-3 text-sm">
                                     <input
                                         type="checkbox"
                                         checked={skipConsent}
@@ -305,7 +305,7 @@ export function AdminCreateOAuthClientScreen() {
                                         </p>
                                     </div>
                                 </label>
-                                <label className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
+                                <label className="flex items-start gap-3 rounded-lg border bg-muted p-3 text-sm">
                                     <input
                                         type="checkbox"
                                         checked={enableEndSession}
@@ -319,7 +319,7 @@ export function AdminCreateOAuthClientScreen() {
                                         </p>
                                     </div>
                                 </label>
-                                <label className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
+                                <label className="flex items-start gap-3 rounded-lg border bg-muted p-3 text-sm">
                                     <input
                                         type="checkbox"
                                         checked={requirePkce}
@@ -343,7 +343,7 @@ export function AdminCreateOAuthClientScreen() {
                                     id="subject-type"
                                     value={subjectType}
                                     onChange={(event) => setSubjectType(event.target.value as (typeof SUBJECT_TYPE_OPTIONS)[number])}
-                                    className="flex h-10 w-full rounded-md border border-border/60 bg-muted/20 px-3 py-2 text-sm"
+                                    className="flex h-10 w-full rounded-md border bg-muted px-3 py-2 text-sm"
                                 >
                                     {SUBJECT_TYPE_OPTIONS.map((option) => (
                                         <option key={option} value={option}>
@@ -401,7 +401,7 @@ export function AdminCreateOAuthClientScreen() {
                 <DialogContent className="sm:max-w-lg" onPointerDownOutside={(e) => e.preventDefault()}>
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <AlertTriangle className="size-4 text-amber-500" />
+                            <AlertTriangle className="size-4 text-[color:var(--warning)]" />
                             Client credentials created
                         </DialogTitle>
                         <DialogDescription className="text-pretty">
@@ -413,7 +413,7 @@ export function AdminCreateOAuthClientScreen() {
                         <div className="space-y-1.5">
                             <p className="text-xs font-medium text-muted-foreground">Client ID</p>
                             <div className="flex items-center gap-2">
-                                <code className="flex-1 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-sm font-mono truncate">
+                                <code className="flex-1 rounded-lg border bg-muted px-3 py-2 text-sm font-mono truncate">
                                     {createdClientId}
                                 </code>
                                 <Button
@@ -424,7 +424,7 @@ export function AdminCreateOAuthClientScreen() {
                                     aria-label="Copy client ID"
                                 >
                                     {copiedField === "id" ? (
-                                        <Check className="size-3.5 text-emerald-500" />
+                                        <Check className="size-3.5 text-[color:var(--success)]" />
                                     ) : (
                                         <Copy className="size-3.5" />
                                     )}
@@ -435,7 +435,7 @@ export function AdminCreateOAuthClientScreen() {
                         <div className="space-y-1.5">
                             <p className="text-xs font-medium text-muted-foreground">Client Secret</p>
                             <div className="flex items-center gap-2">
-                                <code className="flex-1 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-sm font-mono truncate">
+                                <code className="flex-1 rounded-lg border bg-muted px-3 py-2 text-sm font-mono truncate">
                                     {createdSecret}
                                 </code>
                                 <Button
@@ -446,7 +446,7 @@ export function AdminCreateOAuthClientScreen() {
                                     aria-label="Copy client secret"
                                 >
                                     {copiedField === "secret" ? (
-                                        <Check className="size-3.5 text-emerald-500" />
+                                        <Check className="size-3.5 text-[color:var(--success)]" />
                                     ) : (
                                         <Copy className="size-3.5" />
                                     )}

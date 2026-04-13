@@ -189,19 +189,19 @@ export function AdminOAuthScopesScreen() {
         }
       />
 
-      <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
+      <div className="rounded-lg border border-[color:var(--warning)]/25 bg-[var(--warning-soft)] px-4 py-3 text-sm text-[color:var(--warning)]">
         Scope changes are saved immediately, but the OAuth provider will only advertise and issue
         newly added or updated scopes after the server restarts or redeploys.
       </div>
 
       {error ? (
-        <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="border-border/50 bg-card">
+        <Card>
           <CardContent className="space-y-1 p-5">
             <p className="text-sm text-muted-foreground">Built-in scopes</p>
             <p className="text-2xl font-semibold tabular-nums">
@@ -209,13 +209,13 @@ export function AdminOAuthScopesScreen() {
             </p>
           </CardContent>
         </Card>
-        <Card className="border-border/50 bg-card">
+        <Card>
           <CardContent className="space-y-1 p-5">
             <p className="text-sm text-muted-foreground">Active custom scopes</p>
             <p className="text-2xl font-semibold tabular-nums">{activeCustomCount}</p>
           </CardContent>
         </Card>
-        <Card className="border-border/50 bg-card">
+        <Card>
           <CardContent className="space-y-1 p-5">
             <p className="text-sm text-muted-foreground">Self-service custom scopes</p>
             <p className="text-2xl font-semibold tabular-nums">
@@ -225,7 +225,7 @@ export function AdminOAuthScopesScreen() {
         </Card>
       </div>
 
-      <Card className="border-border/50 bg-card">
+      <Card>
         <CardHeader>
           <CardTitle className="text-lg font-medium">Scope registry</CardTitle>
           <CardDescription className="text-sm text-pretty">
@@ -237,11 +237,11 @@ export function AdminOAuthScopesScreen() {
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 4 }).map((_, index) => (
-                <Skeleton key={index} className="h-24 w-full rounded-xl" />
+                <Skeleton key={index} className="h-24 w-full rounded-lg" />
               ))}
             </div>
           ) : scopes.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border/70 bg-muted/20 p-8 text-center">
+            <div className="rounded-lg border border-dashed p-8 text-center">
               <Tag className="mx-auto mb-3 size-8 text-muted-foreground/60" />
               <p className="text-sm text-muted-foreground">No OAuth scopes found.</p>
             </div>
@@ -250,12 +250,12 @@ export function AdminOAuthScopesScreen() {
               {scopes.map((scope) => (
                 <div
                   key={scope.key}
-                  className="rounded-xl border border-border/60 p-4"
+                  className="rounded-lg border bg-background p-4"
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <code className="rounded bg-muted px-2 py-1 text-xs">{scope.key}</code>
+                        <code className="rounded-md border bg-muted px-2 py-1 text-xs">{scope.key}</code>
                         <AdminStatusBadge
                           label={scope.isSystem ? "Built-in" : "Custom"}
                           tone={scope.isSystem ? "default" : "success"}
@@ -361,7 +361,7 @@ export function AdminOAuthScopesScreen() {
               />
             </div>
             <div className="space-y-2">
-              <label className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
+              <label className="flex items-start gap-3 rounded-lg border bg-muted p-3 text-sm">
                 <input
                   type="checkbox"
                   checked={form.allowSelfService}
@@ -380,7 +380,7 @@ export function AdminOAuthScopesScreen() {
                   </p>
                 </div>
               </label>
-              <label className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
+              <label className="flex items-start gap-3 rounded-lg border bg-muted p-3 text-sm">
                 <input
                   type="checkbox"
                   checked={form.isActive}

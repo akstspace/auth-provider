@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { authClient } from "@/lib/auth-client"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Shield, KeySquare, ShieldCheck, Download, Link2, Trash2, Loader2, Monitor, Smartphone, RefreshCw, LogOut } from "lucide-react"
@@ -354,7 +355,7 @@ export function SecuritySettingsScreen() {
     return (
         <div className="max-w-2xl mx-auto space-y-8">
             <div>
-                <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
                     <Shield className="size-5" />
                     Security Settings
                 </h2>
@@ -363,7 +364,7 @@ export function SecuritySettingsScreen() {
                 </p>
             </div>
 
-            <div className="border border-border/50 rounded-lg p-6 bg-card text-card-foreground">
+            <div className="rounded-lg border bg-card p-6 text-card-foreground">
                 <div className="flex items-start justify-between gap-4 mb-4">
                     <div>
                         <h3 className="text-lg font-semibold">Your devices</h3>
@@ -385,12 +386,12 @@ export function SecuritySettingsScreen() {
                         Loading active sessions...
                     </div>
                 ) : deviceSessions.length === 0 ? (
-                    <div className="rounded-lg border border-dashed border-border/60 bg-muted/20 p-6 text-sm text-muted-foreground">
+                    <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
                         No active sessions found yet.
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        <div className="rounded-2xl border border-border/60 bg-background/60 p-4 sm:p-5">
+                        <div className="rounded-lg border bg-background p-4 sm:p-5">
                             <div className="flex items-start gap-3">
                                 {(() => {
                                     const Icon = getDeviceIcon(currentDeviceSession?.userAgent)
@@ -401,9 +402,9 @@ export function SecuritySettingsScreen() {
                                         <p className="text-sm font-medium text-foreground">
                                             This device
                                         </p>
-                                        <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
+                                        <Badge variant="secondary" className="px-2.5 py-1 text-[11px]">
                                             Current
-                                        </span>
+                                        </Badge>
                                     </div>
                                     <p className="mt-1 text-sm text-muted-foreground">
                                         {getDeviceLabel(currentDeviceSession?.userAgent)} · {getBrowserLabel(currentDeviceSession?.userAgent)}
@@ -426,7 +427,7 @@ export function SecuritySettingsScreen() {
                             </div>
 
                             {otherDeviceSessions.length === 0 ? (
-                                <div className="rounded-xl border border-dashed border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
+                                <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
                                     No other active sessions found for this account.
                                 </div>
                             ) : (
@@ -438,7 +439,7 @@ export function SecuritySettingsScreen() {
                                     return (
                                         <div
                                             key={sessionToken || item.id}
-                                            className="rounded-xl border border-border/60 bg-background/60 p-4"
+                                            className="rounded-lg border bg-background p-4"
                                         >
                                             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                                 <div className="min-w-0 flex items-start gap-3">
@@ -483,9 +484,9 @@ export function SecuritySettingsScreen() {
                 )}
             </div>
 
-            <div className="border border-border/50 rounded-lg p-6 bg-card text-card-foreground">
+            <div className="rounded-lg border bg-card p-6 text-card-foreground">
                 <div className="flex items-center gap-3 mb-4">
-                    <ShieldCheck className={`size-6 ${is2FAEnabled ? "text-emerald-500" : "text-muted-foreground"}`} />
+                    <ShieldCheck className={`size-6 ${is2FAEnabled ? "text-[color:var(--success)]" : "text-muted-foreground"}`} />
                     <div>
                         <h3 className="text-lg font-semibold">Two-Factor Authentication (2FA)</h3>
                         <p className="text-sm text-muted-foreground">
@@ -514,7 +515,7 @@ export function SecuritySettingsScreen() {
 
                 {totpURI && !verified && (
                     <div className="mt-6 space-y-6">
-                        <div className="p-4 bg-white rounded-lg inline-block">
+                        <div className="inline-block rounded-lg bg-[#fffdf7] p-4">
                             <QRCode value={totpURI} size={150} />
                         </div>
                         <p className="text-sm max-w-sm text-muted-foreground">
@@ -541,7 +542,7 @@ export function SecuritySettingsScreen() {
 
                 {verified && backupCodes.length > 0 && (
                     <div className="mt-6 space-y-4">
-                        <div className="text-sm text-emerald-500 font-medium">
+                        <div className="text-sm font-medium text-[color:var(--success)]">
                             ✓ 2FA has been enabled successfully.
                         </div>
                         <div>
@@ -554,7 +555,7 @@ export function SecuritySettingsScreen() {
                             </p>
                             <div className="grid grid-cols-2 gap-2 max-w-sm font-mono text-sm">
                                 {backupCodes.map((code, i) => (
-                                    <div key={i} className="p-2 bg-secondary/50 rounded border border-border/50 text-center tracking-widest">
+                                    <div key={i} className="rounded border bg-secondary px-2 py-2 text-center tracking-widest">
                                         {code}
                                     </div>
                                 ))}
@@ -602,7 +603,7 @@ export function SecuritySettingsScreen() {
 
             </div>
 
-            <div className="border border-border/50 rounded-lg p-6 bg-card text-card-foreground">
+            <div className="rounded-lg border bg-card p-6 text-card-foreground">
                 <div className="flex items-center gap-3 mb-4">
                     <Link2 className="size-6 text-muted-foreground" />
                     <div>
@@ -620,7 +621,7 @@ export function SecuritySettingsScreen() {
                         <Loader2 className="size-5 animate-spin text-muted-foreground" />
                     </div>
                 ) : accessItems.length === 0 ? (
-                    <div className="rounded-lg border border-dashed border-border/60 bg-muted/20 p-6 text-sm text-muted-foreground">
+                    <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
                         No apps currently have access to your account.
                     </div>
                 ) : (
@@ -632,7 +633,7 @@ export function SecuritySettingsScreen() {
                             return (
                                 <div
                                     key={item.consentId}
-                                    className="rounded-xl border border-border/60 bg-background/60 p-4"
+                                    className="rounded-lg border bg-background p-4"
                                 >
                                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                         <div className="min-w-0 space-y-2">
@@ -644,11 +645,11 @@ export function SecuritySettingsScreen() {
                                             </div>
                                             <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                                                 {hostname ? (
-                                                    <span className="rounded-full border border-border/60 bg-muted/40 px-2.5 py-1">
+                                                    <span className="rounded-md border bg-muted px-2.5 py-1">
                                                         {hostname}
                                                     </span>
                                                 ) : null}
-                                                <span className="rounded-full border border-border/60 bg-muted/40 px-2.5 py-1">
+                                                <span className="rounded-md border bg-muted px-2.5 py-1">
                                                     Granted {formatAccessDate(item.updatedAt)}
                                                 </span>
                                             </div>
@@ -657,7 +658,7 @@ export function SecuritySettingsScreen() {
                                                     {item.scopes.map((scope) => (
                                                         <span
                                                             key={`${item.consentId}-${scope}`}
-                                                            className="rounded-full border border-border/60 bg-muted/30 px-2.5 py-1 font-mono text-[11px] text-foreground"
+                                                            className="rounded-md border bg-muted px-2.5 py-1 font-mono text-[11px] text-foreground"
                                                         >
                                                             {scope}
                                                         </span>

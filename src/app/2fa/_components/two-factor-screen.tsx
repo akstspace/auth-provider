@@ -1,15 +1,14 @@
 "use client"
 
-import { useState, Suspense } from "react"
+import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { motion } from "motion/react"
 import { authClient } from "@/lib/auth-client"
+import { AuthScreenShell } from "@/components/auth/auth-screen-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ShieldCheck } from "lucide-react"
 import { getAuthErrorMessage } from "@/lib/auth-error"
 import { getAuthFlowParams, resolveCallbackUrl } from "@/lib/auth-flow"
-import { pageEnterMotion } from "@/lib/motion"
 
 export function TwoFactorScreen() {
     const [code, setCode] = useState("")
@@ -76,18 +75,14 @@ export function TwoFactorScreen() {
     }
 
     return (
-        <div className="min-h-dvh bg-background flex items-center justify-center p-4 text-foreground">
-            <motion.div
-                {...pageEnterMotion}
-                className="w-full max-w-sm"
-            >
+        <AuthScreenShell widthClassName="max-w-sm">
                 <div className="mb-8 text-center">
                     <div className="flex justify-center mb-4">
-                        <div className="flex items-center justify-center size-10 rounded-full bg-muted">
+                        <div className="flex items-center justify-center size-10 rounded-md bg-[var(--icon-soft)]">
                             <ShieldCheck className="size-5" />
                         </div>
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight">
+                    <h1 className="text-2xl font-bold text-balance">
                         {mode === "totp" ? "Two-Factor Authentication" : "Backup Code"}
                     </h1>
                     <p className="text-sm text-muted-foreground mt-2 text-pretty">
@@ -97,7 +92,14 @@ export function TwoFactorScreen() {
                     </p>
                 </div>
 
-                {error && <div className="text-sm text-destructive text-center mb-4">{error}</div>}
+                {error && (
+                    <div
+                        role="alert"
+                        className="mb-4 rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-3 py-2 text-center text-sm text-destructive"
+                    >
+                        {error}
+                    </div>
+                )}
 
                 <form onSubmit={mode === "totp" ? handleVerifyTotp : handleVerifyBackup} className="space-y-4">
                     <div>
@@ -135,11 +137,10 @@ export function TwoFactorScreen() {
                 <button
                     type="button"
                     onClick={switchMode}
-                    className="w-full mt-4 text-xs text-muted-foreground hover:text-foreground transition-colors text-center"
+                    className="mt-4 w-full text-center text-xs text-muted-foreground transition-colors hover:text-[#c94b1f]"
                 >
                     {mode === "totp" ? "Use a backup code instead" : "Use authenticator app instead"}
                 </button>
-            </motion.div>
-        </div>
+        </AuthScreenShell>
     )
 }

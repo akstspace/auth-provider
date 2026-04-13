@@ -40,8 +40,8 @@ export function SettingsLayoutShell({ children }: { children: React.ReactNode })
     const getNavItemClassName = (item: NavItem) => {
         const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
         return `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${isActive
-            ? "bg-muted text-foreground"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            ? "border border-border bg-secondary text-foreground"
+            : "text-muted-foreground hover:bg-accent hover:text-[#c94b1f]"
             }`
     }
 

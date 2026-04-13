@@ -95,7 +95,7 @@ export function AdminOverviewScreen() {
             />
 
             {error ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {error}
                 </div>
             ) : null}
@@ -124,7 +124,7 @@ export function AdminOverviewScreen() {
             </div>
 
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)]">
-                <Card className="border-border/50 bg-card">
+                <Card>
                     <CardHeader>
                         <CardTitle className="text-lg font-medium">Recent users</CardTitle>
                         <CardDescription className="text-sm leading-6 text-pretty">
@@ -141,18 +141,18 @@ export function AdminOverviewScreen() {
                                 </div>
                                 <div className="space-y-3 md:hidden">
                                     {Array.from({ length: 3 }).map((_, index) => (
-                                        <Skeleton key={index} className="h-24 w-full rounded-xl" />
+                                        <Skeleton key={index} className="h-24 w-full rounded-lg" />
                                     ))}
                                 </div>
                             </>
                         ) : recentUsers.length === 0 ? (
-                            <div className="rounded-xl border border-dashed border-border/70 bg-muted/20 p-6 text-sm text-muted-foreground">
+                            <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
                                 No users found yet.
                             </div>
                         ) : (
                             <>
                                 <div className="hidden md:block">
-                                    <div className="overflow-hidden rounded-xl border border-border/60">
+                                    <div className="overflow-hidden rounded-lg border">
                                         <Table className="min-w-[620px]">
                                             <TableHeader>
                                                 <TableRow>
@@ -219,7 +219,7 @@ export function AdminOverviewScreen() {
 
                                 <div className="space-y-3 md:hidden">
                                     {recentUsers.map((user) => (
-                                        <div key={user.id} className="rounded-xl border border-border/60 p-4">
+                                        <div key={user.id} className="rounded-lg border bg-background p-4">
                                             <Link
                                                 href={`/admin/users/${user.id}`}
                                                 className="block font-medium text-foreground hover:underline"
@@ -251,7 +251,7 @@ export function AdminOverviewScreen() {
                     </CardContent>
                 </Card>
 
-                <Card className="border-border/50 bg-card">
+                <Card>
                     <CardHeader>
                         <CardTitle className="text-lg font-medium">Quick actions</CardTitle>
                     </CardHeader>

@@ -193,7 +193,7 @@ export function AdminOAuthClientDetailScreen({
                     title="OAuth client"
                     description="Loading client details…"
                 />
-                <Card className="border-border/50 bg-card xl:max-w-4xl">
+                <Card className="xl:max-w-4xl">
                     <CardContent className="space-y-4 p-6">
                         {Array.from({ length: 5 }).map((_, i) => (
                             <Skeleton key={i} className="h-6 w-full" />
@@ -212,7 +212,7 @@ export function AdminOAuthClientDetailScreen({
                     description="Client not found."
                 />
                 {error ? (
-                    <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                    <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                         {error}
                     </div>
                 ) : null}
@@ -228,13 +228,13 @@ export function AdminOAuthClientDetailScreen({
             />
 
             {error ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {error}
                 </div>
             ) : null}
 
             {/* Client info */}
-            <Card className="border-border/50 bg-card xl:max-w-4xl">
+            <Card className="xl:max-w-4xl">
                 <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="space-y-1">
                         <CardTitle className="text-lg font-medium">Client details</CardTitle>
@@ -282,7 +282,7 @@ export function AdminOAuthClientDetailScreen({
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                                     <AlertDialogAction
                                         onClick={() => void handleDelete()}
-                                        className="bg-destructive text-white hover:bg-destructive/90"
+                                        className=""
                                     >
                                         Delete
                                     </AlertDialogAction>
@@ -357,7 +357,7 @@ export function AdminOAuthClientDetailScreen({
                                     <Badge
                                         key={scope}
                                         variant="outline"
-                                        className="font-mono text-[11px] border-border/60"
+                                        className="border bg-muted font-mono text-[11px]"
                                     >
                                         {scope}
                                     </Badge>
@@ -397,7 +397,7 @@ export function AdminOAuthClientDetailScreen({
                 <DialogContent className="sm:max-w-lg" onPointerDownOutside={(e) => e.preventDefault()}>
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <AlertTriangle className="size-4 text-amber-500" />
+                            <AlertTriangle className="size-4 text-[color:var(--warning)]" />
                             New client secret
                         </DialogTitle>
                         <DialogDescription className="text-pretty">
@@ -406,7 +406,7 @@ export function AdminOAuthClientDetailScreen({
                     </DialogHeader>
                     <div className="pt-2">
                         <div className="flex items-center gap-2">
-                            <code className="flex-1 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-sm font-mono truncate">
+                            <code className="flex-1 rounded-lg border bg-muted px-3 py-2 text-sm font-mono truncate">
                                 {rotatedSecret}
                             </code>
                             <Button
@@ -417,7 +417,7 @@ export function AdminOAuthClientDetailScreen({
                                 aria-label="Copy new client secret"
                             >
                                 {copiedSecret ? (
-                                    <Check className="size-3.5 text-emerald-500" />
+                                    <Check className="size-3.5 text-[color:var(--success)]" />
                                 ) : (
                                     <Copy className="size-3.5" />
                                 )}

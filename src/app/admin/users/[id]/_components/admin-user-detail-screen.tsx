@@ -400,18 +400,18 @@ export function AdminUserDetailScreen() {
             />
 
             {error ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {error}
                 </div>
             ) : null}
 
             {actionError ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {actionError}
                 </div>
             ) : null}
             {actionSuccess ? (
-                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300">
+                <div className="rounded-lg border border-[color:var(--success)]/25 bg-[var(--success-soft)] px-4 py-3 text-sm text-[color:var(--success)]">
                     {actionSuccess}
                 </div>
             ) : null}
@@ -424,7 +424,7 @@ export function AdminUserDetailScreen() {
                 </div>
             ) : !user ? null : (
                 <>
-                    <Card className="border-border/50 bg-card">
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-lg font-medium">Account summary</CardTitle>
                             <CardDescription className="text-sm leading-6 text-pretty">
@@ -434,7 +434,7 @@ export function AdminUserDetailScreen() {
                         <CardContent className="space-y-5">
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                 <div className="space-y-1">
-                                    <h2 className="text-lg font-semibold tracking-tight">{user.name}</h2>
+                                    <h2 className="text-lg font-semibold">{user.name}</h2>
                                     <p className="text-sm leading-6 text-muted-foreground">{user.email}</p>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
@@ -453,7 +453,7 @@ export function AdminUserDetailScreen() {
                             </div>
 
                             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                                <div className="rounded-lg border border-border/50 bg-card p-4">
+                                <div className="rounded-lg border bg-background p-4">
                                     <p className="text-xs text-muted-foreground">User ID</p>
                                     <div className="mt-2 flex items-center gap-2">
                                         <code className="min-w-0 flex-1 truncate text-xs">{user.id}</code>
@@ -468,15 +468,15 @@ export function AdminUserDetailScreen() {
                                         </Button>
                                     </div>
                                 </div>
-                                <div className="rounded-lg border border-border/50 bg-card p-4">
+                                <div className="rounded-lg border bg-background p-4">
                                     <p className="text-xs text-muted-foreground">Created</p>
                                     <p className="mt-2 text-sm tabular-nums">{formatDateTime(user.createdAt)}</p>
                                 </div>
-                                <div className="rounded-lg border border-border/50 bg-card p-4">
+                                <div className="rounded-lg border bg-background p-4">
                                     <p className="text-xs text-muted-foreground">Updated</p>
                                     <p className="mt-2 text-sm tabular-nums">{formatDateTime(user.updatedAt)}</p>
                                 </div>
-                                <div className="rounded-lg border border-border/50 bg-card p-4">
+                                <div className="rounded-lg border bg-background p-4">
                                     <p className="text-xs text-muted-foreground">Ban expires</p>
                                     <p className="mt-2 text-sm tabular-nums">
                                         {user.banExpires ? formatDateTime(user.banExpires) : "Never"}
@@ -485,7 +485,7 @@ export function AdminUserDetailScreen() {
                             </div>
 
                             {user.banned && user.banReason ? (
-                                <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
+                                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] p-3 text-sm text-destructive">
                                     Ban reason: {user.banReason}
                                 </div>
                             ) : null}
@@ -520,7 +520,7 @@ export function AdminUserDetailScreen() {
                     </Card>
 
                     <div className="grid gap-4 xl:grid-cols-2">
-                        <Card className="flex h-full flex-col border-border/50 bg-card">
+                        <Card className="flex h-full flex-col">
                             <CardHeader>
                                 <CardTitle className="text-lg font-medium">Profile</CardTitle>
                                 <CardDescription className="text-sm leading-6 text-pretty">
@@ -543,7 +543,7 @@ export function AdminUserDetailScreen() {
                                     </div>
                                 </dl>
                             </CardContent>
-                            <CardFooter className="border-t border-border/50 pt-4">
+                            <CardFooter className="border-t pt-4">
                                 <Button type="button" variant="outline" size="sm" onClick={() => setProfileDialogOpen(true)}>
                                     <Pencil className="size-4" />
                                     <span className="ml-2">Edit profile</span>
@@ -551,7 +551,7 @@ export function AdminUserDetailScreen() {
                             </CardFooter>
                         </Card>
 
-                        <Card className="flex h-full flex-col border-border/50 bg-card">
+                        <Card className="flex h-full flex-col">
                             <CardHeader>
                                 <CardTitle className="text-lg font-medium">Roles</CardTitle>
                                 <CardDescription className="text-sm leading-6 text-pretty">
@@ -561,7 +561,7 @@ export function AdminUserDetailScreen() {
                             <CardContent className="flex flex-1 flex-col gap-4">
                                 <p className="text-sm">{formatRoleList(user.role) || "user"}</p>
                             </CardContent>
-                            <CardFooter className="border-t border-border/50 pt-4">
+                            <CardFooter className="border-t pt-4">
                                 <Button type="button" variant="outline" size="sm" onClick={() => setRolesDialogOpen(true)}>
                                     <Shield className="size-4" />
                                     <span className="ml-2">Manage roles</span>
@@ -569,7 +569,7 @@ export function AdminUserDetailScreen() {
                             </CardFooter>
                         </Card>
 
-                        <Card className="flex h-full flex-col border-border/50 bg-card">
+                        <Card className="flex h-full flex-col">
                             <CardHeader>
                                 <CardTitle className="text-lg font-medium">Password</CardTitle>
                                 <CardDescription className="text-sm leading-6 text-pretty">
@@ -579,7 +579,7 @@ export function AdminUserDetailScreen() {
                             <CardContent className="flex flex-1 flex-col gap-4">
                                 <p className="text-sm text-muted-foreground">No password is shown here for security reasons.</p>
                             </CardContent>
-                            <CardFooter className="border-t border-border/50 pt-4">
+                            <CardFooter className="border-t pt-4">
                                 <Button type="button" variant="outline" size="sm" onClick={() => setPasswordDialogOpen(true)}>
                                     <KeyRound className="size-4" />
                                     <span className="ml-2">Update password</span>
@@ -587,7 +587,7 @@ export function AdminUserDetailScreen() {
                             </CardFooter>
                         </Card>
 
-                        <Card className="flex h-full flex-col border-border/50 bg-card">
+                        <Card className="flex h-full flex-col">
                             <CardHeader>
                                 <CardTitle className="text-lg font-medium">Suspension</CardTitle>
                                 <CardDescription className="text-sm leading-6 text-pretty">
@@ -610,7 +610,7 @@ export function AdminUserDetailScreen() {
                                     </div>
                                 </dl>
                             </CardContent>
-                            <CardFooter className="border-t border-border/50 pt-4">
+                            <CardFooter className="border-t pt-4">
                                 <Button type="button" variant="outline" size="sm" onClick={() => setSuspensionDialogOpen(true)}>
                                     <Ban className="size-4" />
                                     <span className="ml-2">Manage suspension</span>
@@ -619,7 +619,7 @@ export function AdminUserDetailScreen() {
                         </Card>
                     </div>
 
-                    <Card className="border-border/50 bg-card">
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-lg font-medium">Sessions</CardTitle>
                             <CardDescription className="text-sm leading-6 text-pretty">
@@ -628,13 +628,13 @@ export function AdminUserDetailScreen() {
                         </CardHeader>
                         <CardContent className="space-y-3">
                             {sessions.length === 0 ? (
-                                <div className="rounded-xl border border-dashed border-border/70 bg-muted/20 p-6 text-sm text-muted-foreground">
+                                <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
                                     No active sessions found.
                                 </div>
                             ) : (
                                 <>
                                     <div className="hidden md:block">
-                                        <div className="overflow-x-auto rounded-xl border border-border/60">
+                                        <div className="overflow-x-auto rounded-lg border">
                                             <Table className="min-w-[880px]">
                                                 <TableHeader>
                                                     <TableRow>
@@ -676,7 +676,7 @@ export function AdminUserDetailScreen() {
 
                                     <div className="space-y-3 md:hidden">
                                         {sessions.map((sessionRecord) => (
-                                            <div key={sessionRecord.id} className="rounded-xl border border-border/60 p-4">
+                                            <div key={sessionRecord.id} className="rounded-lg border bg-background p-4">
                                                 <div className="flex flex-wrap gap-2">
                                                     {sessionRecord.impersonatedBy ? (
                                                         <AdminStatusBadge label="Impersonated" tone="warning" />
@@ -712,7 +712,7 @@ export function AdminUserDetailScreen() {
                                 void runConfirmedAction()
                             }}
                             disabled={confirming}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            className=""
                         >
                             {confirming ? <Loader2 className="size-4 animate-spin" /> : null}
                             <span className={confirming ? "ml-2" : ""}>{confirmState?.actionLabel}</span>
@@ -751,7 +751,7 @@ export function AdminUserDetailScreen() {
                             <Textarea id="profilePatch" value={profilePatch} onChange={(event) => setProfilePatch(event.target.value)} placeholder='{"department":"Operations"}' />
                         </div>
 
-                        <label className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
+                        <label className="flex items-start gap-3 rounded-lg border bg-muted p-3 text-sm">
                             <input
                                 type="checkbox"
                                 checked={profileEmailVerified}
@@ -833,7 +833,7 @@ export function AdminUserDetailScreen() {
                             <label htmlFor="banExpiresIn" className="text-sm font-medium">Ban expiry in seconds</label>
                             <Input id="banExpiresIn" type="number" min="1" value={banExpiresIn} onChange={(event) => setBanExpiresIn(event.target.value)} placeholder="604800" />
                         </div>
-                        <div className="rounded-lg border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
+                        <div className="rounded-lg border bg-muted p-4 text-sm text-muted-foreground">
                             {user?.banned ? (
                                 <p className="text-pretty">
                                     This account is currently suspended.

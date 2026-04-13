@@ -17,7 +17,7 @@ export function TurnstileWidget({ onTokenChange }: TurnstileWidgetProps) {
     <div className="min-h-16 overflow-hidden rounded-xl bg-card [&_iframe]:-m-px [&_iframe]:block [&_iframe]:rounded-[inherit] [&_iframe]:border-0">
       <Turnstile
         sitekey={captchaSiteKey}
-        theme={resolvedTheme === "dark" ? "dark" : "light"}
+        theme={resolvedTheme === "dark" || resolvedTheme === "chai" ? "dark" : "light"}
         size="flexible"
         fixedSize
         retry="auto"

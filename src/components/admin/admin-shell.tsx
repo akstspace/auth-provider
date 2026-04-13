@@ -70,8 +70,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                         className={cn(
                           "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                           isActive
-                            ? "bg-muted text-foreground"
-                            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                            ? "border border-border bg-secondary text-foreground"
+                            : "text-muted-foreground hover:bg-accent hover:text-[#c94b1f]",
                         )}
                       >
                         <item.icon className="size-4" />
@@ -105,7 +105,7 @@ export function AdminPageHeader({
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="space-y-1">
-        <h1 className="text-xl font-semibold tracking-tight text-balance sm:text-2xl">
+        <h1 className="text-xl font-bold text-balance sm:text-2xl">
           {title}
         </h1>
         <p className="max-w-2xl text-sm text-muted-foreground text-pretty">
@@ -127,7 +127,7 @@ export function AdminMetricCard({
   description: string;
 }) {
   return (
-    <Card className="border-border/50 bg-card">
+    <Card className="bg-card">
       <CardContent className="space-y-2 p-5">
         <p className="text-sm text-muted-foreground">{label}</p>
         <p className="text-xl font-semibold tabular-nums">{value}</p>
@@ -145,13 +145,13 @@ export function AdminStatusBadge({
   tone?: "default" | "success" | "warning" | "danger";
 }) {
   const toneClasses: Record<string, string> = {
-    default: "border-border/60 bg-muted/70 text-foreground hover:bg-muted/70",
+    default: "border-border bg-muted text-foreground hover:bg-muted",
     success:
-      "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-300",
+      "border-[color:var(--success)]/25 bg-[var(--success-soft)] text-[color:var(--success)] hover:bg-[var(--success-soft)]",
     warning:
-      "border-amber-500/20 bg-amber-500/10 text-amber-700 hover:bg-amber-500/10 dark:text-amber-300",
+      "border-[color:var(--warning)]/25 bg-[var(--warning-soft)] text-[color:var(--warning)] hover:bg-[var(--warning-soft)]",
     danger:
-      "border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive/10",
+      "border-destructive/25 bg-[var(--danger-soft)] text-destructive hover:bg-[var(--danger-soft)]",
   };
 
   return (

@@ -131,7 +131,7 @@ export function AdminUsersScreen() {
                 }
             />
 
-            <Card className="border-border/50 bg-card">
+            <Card>
                 <CardHeader>
                     <CardTitle className="text-lg font-medium">Find users</CardTitle>
                     <CardDescription className="text-sm leading-6 text-pretty">
@@ -257,7 +257,7 @@ export function AdminUsersScreen() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
                             <p className="max-w-3xl text-sm leading-6 text-muted-foreground text-pretty">
                                 Open a user to manage profile, password, sessions, and suspension settings.
                             </p>
@@ -283,12 +283,12 @@ export function AdminUsersScreen() {
             </Card>
 
             {error ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {error}
                 </div>
             ) : null}
 
-            <Card className="border-border/50 bg-card">
+            <Card>
                 <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                         <CardTitle className="text-lg font-medium">User results</CardTitle>
@@ -296,7 +296,7 @@ export function AdminUsersScreen() {
                             {total} matched result{total === 1 ? "" : "s"}.
                         </CardDescription>
                     </div>
-                    <div className="rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
+                    <div className="rounded-md border bg-muted px-3 py-1 text-xs text-muted-foreground">
                         Page {currentPage} of {totalPages}
                     </div>
                 </CardHeader>
@@ -315,7 +315,7 @@ export function AdminUsersScreen() {
                             </div>
                         </>
                     ) : users.length === 0 ? (
-                        <div className="rounded-xl border border-dashed border-border/70 bg-muted/20 p-6 text-sm text-muted-foreground">
+                        <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
                             <p>No users match these filters.</p>
                             <Button asChild variant="outline" size="sm" className="mt-4">
                                 <Link href="/admin/users/new">Create a user</Link>
@@ -324,7 +324,7 @@ export function AdminUsersScreen() {
                     ) : (
                         <>
                             <div className="hidden md:block">
-                                <div className="overflow-hidden rounded-xl border border-border/60">
+                                <div className="overflow-hidden rounded-lg border">
                                     <Table className="min-w-[760px]">
                                         <TableHeader>
                                             <TableRow>
@@ -395,7 +395,7 @@ export function AdminUsersScreen() {
 
                             <div className="space-y-3 md:hidden">
                                 {users.map((user) => (
-                                    <div key={user.id} className="rounded-xl border border-border/60 p-4">
+                                    <div key={user.id} className="rounded-lg border bg-background p-4">
                                         <Link
                                             href={`/admin/users/${user.id}`}
                                             className="block font-medium text-foreground hover:underline"
@@ -430,7 +430,7 @@ export function AdminUsersScreen() {
                         </>
                     )}
 
-                    <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
                         <p className="text-sm text-muted-foreground">
                             Showing {users.length} of {total}
                         </p>

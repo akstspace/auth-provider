@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { KeyRound, Plus, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
     Table,
@@ -82,7 +83,7 @@ export function OAuthClientsIndex() {
         <div className="space-y-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-1">
-                    <h1 className="text-xl font-semibold tracking-tight text-balance sm:text-2xl">
+                    <h1 className="text-xl font-bold text-balance sm:text-2xl">
                         OAuth Clients
                     </h1>
                     <p className="max-w-2xl text-sm text-muted-foreground text-pretty">
@@ -110,12 +111,12 @@ export function OAuthClientsIndex() {
             </div>
 
             {error ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {error}
                 </div>
             ) : null}
 
-            <div className="rounded-xl border border-border/50 bg-card/30 overflow-hidden">
+            <div className="overflow-hidden rounded-lg border bg-card">
                 {loading ? (
                     <div className="space-y-2 p-6">
                         {Array.from({ length: 3 }).map((_, index) => (
@@ -124,7 +125,9 @@ export function OAuthClientsIndex() {
                     </div>
                 ) : clients.length === 0 ? (
                     <div className="p-10 text-center">
-                        <KeyRound className="mx-auto size-8 text-muted-foreground/60 mb-3" />
+                        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-md bg-[var(--icon-soft)]">
+                            <KeyRound className="size-6 text-muted-foreground" />
+                        </div>
                         <p className="text-sm text-muted-foreground mb-4">No OAuth clients found for your account.</p>
                         <Button asChild size="sm">
                             <Link href="/settings/oauth-clients/new">
@@ -193,7 +196,7 @@ export function OAuthClientsIndex() {
                 {!loading && clients.length > 0 ? (
                     <div className="space-y-3 p-4 md:hidden">
                         {clients.map((client) => (
-                            <div key={client.clientId} className="rounded-xl border border-border/60 p-4">
+                            <div key={client.clientId} className="rounded-lg border bg-background p-4">
                                 <Link
                                     href={`/settings/oauth-clients/${client.clientId}`}
                                     className="block font-medium text-foreground hover:underline"
@@ -203,9 +206,19 @@ export function OAuthClientsIndex() {
                                 <p className="mt-0.5 truncate text-xs text-muted-foreground font-mono">
                                     {client.clientId}
                                 </p>
-                                <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                                    <span>{client.public ? "Public" : "Confidential"}</span>
-                                    <span>{client.disabled ? "Disabled" : "Active"}</span>
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    <Badge variant="outline" className="text-[11px]">
+                                        {client.public ? "Public" : "Confidential"}
+                                    </Badge>
+                                    <Badge
+                                        variant="outline"
+                                        className={client.disabled
+                                            ? "border-destructive/25 bg-[var(--danger-soft)] text-destructive text-[11px]"
+                                            : "border-[color:var(--success)]/25 bg-[var(--success-soft)] text-[color:var(--success)] text-[11px]"
+                                        }
+                                    >
+                                        {client.disabled ? "Disabled" : "Active"}
+                                    </Badge>
                                 </div>
                                 <p className="mt-3 text-xs text-muted-foreground tabular-nums">
                                     {formatDate(client.createdAt)}

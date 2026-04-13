@@ -11,6 +11,14 @@ metadata:
 
 Review files for compliance with Web Interface Guidelines.
 
+## Priority of rules
+
+- If the repo contains a local design system such as `DESIGN.md`, treat it as the primary authority for branding, color, typography, spacing, component styling, and design language.
+- Use the external Web Interface Guidelines as secondary review criteria for generic UX, accessibility, and interaction quality.
+- When the two differ, prefer the local repo design system for visual language and note the distinction.
+- If `DESIGN.md` defines named themes or theme semantics, those local theme rules take priority over generic dark-mode assumptions.
+- When reviewing theme UI, verify that `Light`, `Dark`, `Chai`, and `System` remain distinct where `DESIGN.md` requires them, and that `System` dark resolves to `Dark`, not `Chai`.
+
 ## How It Works
 
 1. Fetch the latest guidelines from the source URL below

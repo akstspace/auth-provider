@@ -183,12 +183,12 @@ export function OAuthClientDetailScreen({
         return (
             <div className="space-y-8">
                 <div className="space-y-1">
-                    <h1 className="text-xl font-semibold tracking-tight text-balance sm:text-2xl">
+                    <h1 className="text-xl font-bold text-balance sm:text-2xl">
                         OAuth client
                     </h1>
                     <p className="text-sm text-muted-foreground">Loading client details…</p>
                 </div>
-                <div className="rounded-xl border border-border/50 bg-card p-6 space-y-4">
+                <div className="space-y-4 rounded-lg border bg-card p-6">
                     {Array.from({ length: 5 }).map((_, i) => (
                         <Skeleton key={i} className="h-6 w-full" />
                     ))}
@@ -201,13 +201,13 @@ export function OAuthClientDetailScreen({
         return (
             <div className="space-y-8">
                 <div className="space-y-1">
-                    <h1 className="text-xl font-semibold tracking-tight text-balance sm:text-2xl">
+                    <h1 className="text-xl font-bold text-balance sm:text-2xl">
                         OAuth client
                     </h1>
                     <p className="text-sm text-muted-foreground">Client not found.</p>
                 </div>
                 {error ? (
-                    <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                    <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                         {error}
                     </div>
                 ) : null}
@@ -218,20 +218,20 @@ export function OAuthClientDetailScreen({
     return (
         <div className="space-y-8">
             <div className="space-y-1">
-                <h1 className="text-xl font-semibold tracking-tight text-balance sm:text-2xl">
+                <h1 className="text-xl font-bold text-balance sm:text-2xl">
                     {client.name ?? "Unnamed client"}
                 </h1>
                 <p className="text-sm text-muted-foreground">Client ID: {client.clientId}</p>
             </div>
 
             {error ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {error}
                 </div>
             ) : null}
 
-            <div className="rounded-xl border border-border/50 bg-card">
-                <div className="flex flex-col gap-4 border-b border-border/50 p-6 sm:flex-row sm:items-start sm:justify-between">
+            <div className="rounded-lg border bg-card">
+                <div className="flex flex-col gap-4 border-b p-6 sm:flex-row sm:items-start sm:justify-between">
                     <div className="space-y-1">
                         <h2 className="text-lg font-medium">Client details</h2>
                         <p className="text-sm text-muted-foreground text-pretty">
@@ -278,7 +278,7 @@ export function OAuthClientDetailScreen({
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                                     <AlertDialogAction
                                         onClick={() => void handleDelete()}
-                                        className="bg-destructive text-white hover:bg-destructive/90"
+                                        className=""
                                     >
                                         Delete
                                     </AlertDialogAction>
@@ -341,7 +341,7 @@ export function OAuthClientDetailScreen({
                                     <Badge
                                         key={scope}
                                         variant="outline"
-                                        className="font-mono text-[11px] border-border/60"
+                                        className="border bg-muted font-mono text-[11px]"
                                     >
                                         {scope}
                                     </Badge>
@@ -369,7 +369,7 @@ export function OAuthClientDetailScreen({
                 <DialogContent className="sm:max-w-lg" onPointerDownOutside={(e) => e.preventDefault()}>
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <AlertTriangle className="size-4 text-amber-500" />
+                            <AlertTriangle className="size-4 text-[color:var(--warning)]" />
                             New client secret
                         </DialogTitle>
                         <DialogDescription className="text-pretty">
@@ -378,7 +378,7 @@ export function OAuthClientDetailScreen({
                     </DialogHeader>
                     <div className="pt-2">
                         <div className="flex items-center gap-2">
-                            <code className="flex-1 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-sm font-mono truncate">
+                            <code className="flex-1 rounded-lg border bg-muted px-3 py-2 text-sm font-mono truncate">
                                 {rotatedSecret}
                             </code>
                             <Button
@@ -389,7 +389,7 @@ export function OAuthClientDetailScreen({
                                 aria-label="Copy new client secret"
                             >
                                 {copiedSecret ? (
-                                    <Check className="size-3.5 text-emerald-500" />
+                                    <Check className="size-3.5 text-[color:var(--success)]" />
                                 ) : (
                                     <Copy className="size-3.5" />
                                 )}

@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "motion/react"
 import { ChevronDown, UserPlus } from "lucide-react"
+import { AuthScreenShell } from "@/components/auth/auth-screen-shell"
 import { TurnstileWidget } from "@/components/auth/turnstile-widget"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,7 +14,7 @@ import { getAuthErrorMessage } from "@/lib/auth-error"
 import { getAuthFlowParams, resolveCallbackUrl, withAuthFlow } from "@/lib/auth-flow"
 import { buildAuthErrorUrl, getBannedMessage, isBannedError } from "@/lib/banned-user"
 import { captchaEnabled, captchaHeader } from "@/lib/captcha"
-import { expandMotion, pageEnterMotion } from "@/lib/motion"
+import { expandMotion } from "@/lib/motion"
 
 export function SignUpScreen() {
   const [emailLoading, setEmailLoading] = useState(false)
@@ -120,25 +121,21 @@ export function SignUpScreen() {
   }
 
   return (
-    <div className="min-h-dvh bg-background text-foreground flex items-center justify-center p-4">
-      <motion.div
-        {...pageEnterMotion}
-        className="w-full max-w-sm"
-      >
+    <AuthScreenShell>
         <div className="mb-8">
           <div className="flex items-center gap-2.5 mb-3">
-            <div className="flex items-center justify-center size-9 rounded-lg bg-muted">
+            <div className="flex items-center justify-center size-9 rounded-md bg-[var(--icon-soft)]">
               <UserPlus className="size-4 text-foreground" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-balance">Create account</h1>
+          <h1 className="text-2xl font-bold text-balance">Create account</h1>
           <p className="text-sm text-muted-foreground mt-1 text-pretty">
             Get started by signing in with Google
           </p>
         </div>
 
         {error && (
-          <div role="alert" className="text-sm text-red-500 dark:text-red-400 text-center py-1 mb-4">
+          <div role="alert" className="mb-4 rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-3 py-2 text-center text-sm text-destructive">
             {error}
           </div>
         )}
@@ -147,7 +144,7 @@ export function SignUpScreen() {
           type="button"
           variant="outline"
           onClick={handleGoogleSignIn}
-          className="w-full gap-2 border-border/50"
+          className="w-full gap-2"
         >
           <svg className="size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -164,7 +161,7 @@ export function SignUpScreen() {
             onClick={() => setShowPasswordForm(!showPasswordForm)}
             aria-expanded={showPasswordForm}
             aria-controls="signupPasswordFormPanel"
-            className="w-full flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="flex w-full items-center justify-center gap-1 text-xs text-muted-foreground transition-colors hover:text-[#c94b1f]"
           >
             <span>Or create account with email and password</span>
             <ChevronDown className={`size-3 transition-transform ${showPasswordForm ? "rotate-180" : ""}`} />
@@ -240,12 +237,11 @@ export function SignUpScreen() {
               callbackUrl: flow.callbackUrl,
               oauthQuery: flow.oauthQuery,
             })}
-            className="text-foreground font-medium hover:underline underline-offset-2"
+            className="font-medium text-foreground underline-offset-2 hover:text-[#c94b1f] hover:underline"
           >
             Sign in
           </Link>
         </p>
-      </motion.div>
-    </div>
+    </AuthScreenShell>
   )
 }

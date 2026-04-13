@@ -101,7 +101,7 @@ export function PasskeysSettingsScreen() {
             {/* Header */}
             <div className="flex items-start justify-between">
                 <div>
-                    <h1 className="text-xl font-bold tracking-tight text-foreground">Passkeys</h1>
+                    <h1 className="text-xl font-bold text-foreground">Passkeys</h1>
                     <p className="text-sm text-muted-foreground mt-1">
                         Manage passkeys for passwordless sign-in using biometrics or security keys.
                     </p>
@@ -113,7 +113,7 @@ export function PasskeysSettingsScreen() {
             </div>
 
             {error && (
-                <div role="alert" className="rounded-lg border border-red-500/20 bg-red-500/5 p-3 text-sm text-red-500 dark:text-red-400">
+                <div role="alert" className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] p-3 text-sm text-destructive">
                     {error}
                 </div>
             )}
@@ -126,10 +126,10 @@ export function PasskeysSettingsScreen() {
             ) : passkeys.length === 0 ? (
                 <motion.div
                     {...cardEnterMotion}
-                    className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-10 text-center"
+                    className="rounded-lg border bg-card p-10 text-center"
                 >
                     <div className="flex justify-center mb-4">
-                        <div className="flex items-center justify-center size-12 rounded-xl bg-muted">
+                        <div className="flex items-center justify-center size-12 rounded-md bg-[var(--icon-soft)]">
                             <Fingerprint className="size-6 text-muted-foreground" />
                         </div>
                     </div>
@@ -150,7 +150,7 @@ export function PasskeysSettingsScreen() {
                                 key={pk.id}
                                 {...cardEnterMotion}
                                 exit={{ opacity: 0, y: -6 }}
-                                className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-4"
+                                className="rounded-lg border bg-card p-4"
                             >
                                 {deletingId === pk.id ? (
                                     <div className="space-y-3">
@@ -162,7 +162,8 @@ export function PasskeysSettingsScreen() {
                                                 size="sm"
                                                 onClick={() => handleDelete(pk.id)}
                                                 disabled={actionLoading}
-                                                className="bg-red-500 hover:bg-red-600 text-white gap-1.5"
+                                                className="gap-1.5"
+                                                variant="destructive"
                                             >
                                                 {actionLoading ? "Deleting…" : "Delete"}
                                             </Button>
@@ -181,7 +182,7 @@ export function PasskeysSettingsScreen() {
                                             value={editName}
                                             onChange={(e) => setEditName(e.target.value)}
                                             autoFocus
-                                            className="bg-muted/50 border-border/50 h-8 text-sm"
+                                            className="h-8 text-sm"
                                         />
                                         <Button size="sm" type="submit" disabled={actionLoading}>
                                             Save
@@ -193,7 +194,7 @@ export function PasskeysSettingsScreen() {
                                 ) : (
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3 min-w-0">
-                                            <div className="flex items-center justify-center size-9 rounded-lg bg-muted shrink-0">
+                                            <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[var(--icon-soft)]">
                                                 <KeyRound className="size-4 text-foreground" />
                                             </div>
                                             <div className="min-w-0">
@@ -211,14 +212,14 @@ export function PasskeysSettingsScreen() {
                                         <div className="flex items-center gap-1 shrink-0">
                                             <button
                                                 onClick={() => { setEditingId(pk.id); setEditName(pk.name || "") }}
-                                                className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                                                className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-[#c94b1f]"
                                                 aria-label="Rename passkey"
                                             >
                                                 <Pencil className="size-3.5" />
                                             </button>
                                             <button
                                                 onClick={() => setDeletingId(pk.id)}
-                                                className="p-2 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-500/5 transition-colors"
+                                                className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-[var(--danger-soft)] hover:text-destructive"
                                                 aria-label="Delete passkey"
                                             >
                                                 <Trash2 className="size-3.5" />

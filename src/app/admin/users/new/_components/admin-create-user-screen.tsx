@@ -80,12 +80,12 @@ export function AdminCreateUserScreen() {
             />
 
             {error ? (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="rounded-lg border border-destructive/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-destructive">
                     {error}
                 </div>
             ) : null}
 
-            <Card className="border-border/50 bg-card xl:max-w-4xl">
+            <Card className="xl:max-w-4xl">
                 <CardHeader>
                     <CardTitle className="text-lg font-medium">New platform user</CardTitle>
                     <CardDescription className="text-sm leading-6 text-pretty">
@@ -119,7 +119,7 @@ export function AdminCreateUserScreen() {
                             />
                         </div>
 
-                        <label className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
+                        <label className="flex items-start gap-3 rounded-lg border bg-muted p-3 text-sm">
                             <input
                                 type="checkbox"
                                 checked={createCredentialAccount}

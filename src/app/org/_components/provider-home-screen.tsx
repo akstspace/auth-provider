@@ -52,7 +52,7 @@ export function ProviderHomeScreen() {
                 {...pageEnterMotion}
                 className="space-y-6 pb-16 pt-12"
             >
-                <div className="rounded-3xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm sm:p-8">
+                <div className="rounded-lg border bg-card p-6 sm:p-8">
                     <div className="space-y-2">
                         <p className="text-sm font-medium text-foreground">
                             {session?.user?.name || "Your account"}
@@ -61,7 +61,7 @@ export function ProviderHomeScreen() {
                             {session?.user?.email || "Signed in"}
                         </p>
                         {canAccessPlatformAdmin ? (
-                            <div className="inline-flex rounded-full border border-border/60 bg-muted/60 px-2.5 py-1 text-xs font-medium text-foreground">
+                            <div className="inline-flex rounded-md border bg-muted px-2.5 py-1 text-xs font-medium text-foreground">
                                 Platform admin
                             </div>
                         ) : null}
@@ -72,11 +72,11 @@ export function ProviderHomeScreen() {
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                className="group rounded-2xl border border-border/40 bg-background/70 p-5 transition-colors hover:bg-background"
+                                className="group rounded-lg border bg-background p-5 transition-colors hover:bg-accent"
                             >
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="space-y-3">
-                                        <div className="flex size-10 items-center justify-center rounded-xl border border-border/60 bg-muted/40">
+                                        <div className="flex size-10 items-center justify-center rounded-md border bg-muted">
                                             <item.icon className="size-4 text-foreground" />
                                         </div>
                                         <div>
@@ -86,7 +86,7 @@ export function ProviderHomeScreen() {
                                             </p>
                                         </div>
                                     </div>
-                                    <ChevronRight className="mt-1 size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                                    <ChevronRight className="mt-1 size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-[#c94b1f]" />
                                 </div>
                             </Link>
                         ))}
