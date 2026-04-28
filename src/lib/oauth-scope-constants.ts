@@ -37,7 +37,7 @@ export const BUILTIN_OAUTH_SCOPE_DEFINITIONS: OAuthScopeDefinition[] = [
     label: "Offline Access",
     description: "Issue refresh tokens so the client can act when the user is away.",
     isSystem: true,
-    allowSelfService: false,
+    allowSelfService: true,
     isActive: true,
   },
 ];

@@ -241,7 +241,7 @@ export function CreateOAuthClientScreen() {
                                 ))}
                             </div>
                             <p className="text-xs text-muted-foreground text-pretty">
-                                Self-service clients can only use scopes marked safe by a platform admin. Refresh-token access remains reserved for privileged clients.
+                                Self-service clients can only use scopes marked safe by a platform admin, including offline access when enabled in the scope registry.
                             </p>
                         </div>
 
