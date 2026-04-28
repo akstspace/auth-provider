@@ -1,5 +1,5 @@
 {
-  "id": "6eaff91a-c5b7-45b5-b7b6-88b445e1636e",
+  "id": "e370dae9-7739-42dd-ae83-8d5ec0e084b8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1419,6 +1419,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": true
+        },
+        "oauth_valid_audiences": {
+          "name": "oauth_valid_audiences",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
         },
         "email_password_auth_enabled": {
           "name": "email_password_auth_enabled",

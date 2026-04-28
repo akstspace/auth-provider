@@ -177,6 +177,7 @@ CREATE TABLE "platform_config" (
 	"id" text PRIMARY KEY NOT NULL,
 	"invite_only_enabled" boolean DEFAULT false NOT NULL,
 	"allow_user_client_creation" boolean DEFAULT true NOT NULL,
+	"oauth_valid_audiences" text[],
 	"email_password_auth_enabled" boolean DEFAULT true NOT NULL,
 	"allow_dynamic_client_registration" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,

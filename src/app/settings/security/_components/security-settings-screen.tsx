@@ -14,6 +14,7 @@ interface AppAccessItem {
     clientId: string
     name: string
     uri: string | null
+    redirectUris: string[]
     scopes: string[]
     updatedAt: string | Date | null
 }
@@ -43,6 +44,15 @@ const getHostname = (value: string | null) => {
     } catch {
         return value
     }
+}
+
+const MCP_DEBUG_REDIRECT_URI = "http://127.0.0.1:6274/oauth/callback/debug"
+
+const isMcpClient = (item: AppAccessItem) => {
+    const hasMcpScope = item.scopes.some((scope) => scope.startsWith("mcp:"))
+    const hasMcpUri = (item.uri ?? "").includes("/api/mcp")
+    const hasDebugRedirectUri = item.redirectUris.includes(MCP_DEBUG_REDIRECT_URI)
+    return hasMcpScope || hasMcpUri || hasDebugRedirectUri
 }
 
 const formatSessionActiveAt = (value: string | undefined) => {
@@ -178,6 +188,7 @@ export function SecuritySettingsScreen() {
 
                     let name = clientId || "Unknown app"
                     let uri: string | null = null
+                    let redirectUris: string[] = []
 
                     if (clientId) {
                         try {
@@ -196,6 +207,10 @@ export function SecuritySettingsScreen() {
                                     (client.uri as string | null) ??
                                     (client.client_uri as string | null) ??
                                     null
+                                redirectUris =
+                                    (client.redirectUris as string[] | undefined) ??
+                                    (client.redirect_uris as string[] | undefined) ??
+                                    []
                             }
                         } catch {
                             // Keep fallback display values if public client lookup fails.
@@ -207,6 +222,7 @@ export function SecuritySettingsScreen() {
                         clientId,
                         name,
                         uri,
+                        redirectUris,
                         scopes: fallbackScopes,
                         updatedAt:
                             (consent.updatedAt as string | Date | null) ??
@@ -629,6 +645,7 @@ export function SecuritySettingsScreen() {
                         {accessItems.map((item) => {
                             const hostname = getHostname(item.uri)
                             const isRevoking = revokingConsentId === item.consentId
+                            const isMcp = isMcpClient(item)
 
                             return (
                                 <div
@@ -644,6 +661,11 @@ export function SecuritySettingsScreen() {
                                                 </p>
                                             </div>
                                             <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                                                {isMcp ? (
+                                                    <span className="rounded-md border bg-[var(--warning-soft)] px-2.5 py-1 font-medium text-[color:var(--warning)]">
+                                                        MCP client
+                                                    </span>
+                                                ) : null}
                                                 {hostname ? (
                                                     <span className="rounded-md border bg-muted px-2.5 py-1">
                                                         {hostname}

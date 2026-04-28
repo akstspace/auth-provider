@@ -20,6 +20,7 @@ interface PlatformConfigSettings {
   allowUserClientCreation: boolean
   allowDynamicClientRegistration: boolean
   emailPasswordAuthEnabled: boolean
+  oauthValidAudiences: string[]
 }
 
 interface InviteOnlyDraft extends InviteOnlySettings {}
@@ -42,7 +43,8 @@ const isPlatformConfigSettings = (value: unknown): value is PlatformConfigSettin
   return (
     typeof candidate.allowUserClientCreation === "boolean" &&
     typeof candidate.emailPasswordAuthEnabled === "boolean" &&
-    typeof candidate.allowDynamicClientRegistration === "boolean"
+    typeof candidate.allowDynamicClientRegistration === "boolean" &&
+    Array.isArray(candidate.oauthValidAudiences)
   )
 }
 
@@ -72,6 +74,9 @@ export function AdminConfigScreen() {
   const [allowDynamicClientRegistration, setAllowDynamicClientRegistration] =
     useState(false)
   const [dcrRestartRequired, setDcrRestartRequired] = useState(false)
+  const [oauthAudiencesValue, setOauthAudiencesValue] = useState("")
+  const [savedOAuthAudiencesValue, setSavedOAuthAudiencesValue] = useState("")
+  const [audienceRestartRequired, setAudienceRestartRequired] = useState(false)
   const [emailsValue, setEmailsValue] = useState("")
   const [domainsValue, setDomainsValue] = useState("")
   const [savedSettings, setSavedSettings] = useState<InviteOnlyDraft>({
@@ -133,6 +138,9 @@ export function AdminConfigScreen() {
       setAllowDynamicClientRegistration(
         platformResult.allowDynamicClientRegistration,
       )
+      const audienceValue = toTextareaValue(platformResult.oauthValidAudiences)
+      setOauthAudiencesValue(audienceValue)
+      setSavedOAuthAudiencesValue(audienceValue)
     } catch {
       setError("Failed to load platform configuration.")
     } finally {
@@ -219,6 +227,9 @@ export function AdminConfigScreen() {
       setAllowUserClientCreation(result.allowUserClientCreation)
       setEmailPasswordAuthEnabled(result.emailPasswordAuthEnabled)
       setAllowDynamicClientRegistration(result.allowDynamicClientRegistration)
+      const audienceValue = toTextareaValue(result.oauthValidAudiences)
+      setOauthAudiencesValue(audienceValue)
+      setSavedOAuthAudiencesValue(audienceValue)
       return true
     } catch {
       setError("Failed to save OAuth settings.")
@@ -261,6 +272,7 @@ export function AdminConfigScreen() {
       allowUserClientCreation: nextValue,
       emailPasswordAuthEnabled,
       allowDynamicClientRegistration,
+      oauthValidAudiences: fromTextareaValue(oauthAudiencesValue),
     })
 
     if (!didSave) {
@@ -277,6 +289,7 @@ export function AdminConfigScreen() {
       allowUserClientCreation,
       emailPasswordAuthEnabled,
       allowDynamicClientRegistration: nextValue,
+      oauthValidAudiences: fromTextareaValue(oauthAudiencesValue),
     })
 
     if (!didSave) {
@@ -295,10 +308,31 @@ export function AdminConfigScreen() {
       allowUserClientCreation,
       emailPasswordAuthEnabled: nextValue,
       allowDynamicClientRegistration,
+      oauthValidAudiences: fromTextareaValue(oauthAudiencesValue),
     })
 
     if (!didSave) {
       setEmailPasswordAuthEnabled(previousValue)
+    }
+  }
+
+  const handleSaveOAuthAudiences = async () => {
+    const previousValue = oauthAudiencesValue
+    const nextValues = fromTextareaValue(oauthAudiencesValue)
+    const didSave = await savePlatformConfig({
+      allowUserClientCreation,
+      emailPasswordAuthEnabled,
+      allowDynamicClientRegistration,
+      oauthValidAudiences: nextValues,
+    })
+
+    if (!didSave) {
+      setOauthAudiencesValue(previousValue)
+      return
+    }
+
+    if (oauthAudiencesValue !== savedOAuthAudiencesValue) {
+      setAudienceRestartRequired(true)
     }
   }
 
@@ -445,6 +479,43 @@ export function AdminConfigScreen() {
           {dcrRestartRequired ? (
             <div className="rounded-lg border border-[color:var(--warning)]/25 bg-[var(--warning-soft)] px-4 py-3 text-sm text-[color:var(--warning)]">
               Dynamic client registration changes are saved, but will only take effect after the server restarts or redeploys.
+            </div>
+          ) : null}
+        </section>
+
+        <section className="space-y-4 border-b pb-10">
+          <div className="space-y-1">
+            <h2 className="text-lg font-medium text-foreground">OAuth Resource Audiences</h2>
+            <p className="max-w-2xl text-pretty text-sm leading-6 text-muted-foreground">
+              Configure allowed RFC 8707 `resource` values for access tokens. Include your MCP resource URL so token exchange succeeds.
+            </p>
+          </div>
+
+          <Textarea
+            value={oauthAudiencesValue}
+            onChange={(event) => setOauthAudiencesValue(event.target.value)}
+            className="min-h-32 resize-y bg-muted/20 font-mono text-sm leading-relaxed"
+            placeholder={"https://app.chaistudio.space/api/mcp\nhttps://api.example.com"}
+            disabled={loading || savingPlatformConfig}
+          />
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => void handleSaveOAuthAudiences()}
+              disabled={loading || savingPlatformConfig || oauthAudiencesValue === savedOAuthAudiencesValue}
+            >
+              {savingPlatformConfig ? "Saving..." : "Save audiences"}
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              One audience per line. These are loaded at auth server startup.
+            </p>
+          </div>
+
+          {audienceRestartRequired ? (
+            <div className="rounded-lg border border-[color:var(--warning)]/25 bg-[var(--warning-soft)] px-4 py-3 text-sm text-[color:var(--warning)]">
+              Audience changes are saved, but will only take effect after the server restarts or redeploys.
             </div>
           ) : null}
         </section>

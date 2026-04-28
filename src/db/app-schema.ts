@@ -35,6 +35,7 @@ export const platformConfig = pgTable("platform_config", {
   id: text("id").primaryKey(),
   inviteOnlyEnabled: boolean("invite_only_enabled").default(false).notNull(),
   allowUserClientCreation: boolean("allow_user_client_creation").default(true).notNull(),
+  oauthValidAudiences: text("oauth_valid_audiences").array(),
   emailPasswordAuthEnabled: boolean("email_password_auth_enabled")
     .default(true)
     .notNull(),

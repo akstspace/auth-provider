@@ -12,7 +12,23 @@ interface PlatformConfigBody {
   allowUserClientCreation?: boolean;
   allowDynamicClientRegistration?: boolean;
   emailPasswordAuthEnabled?: boolean;
+  oauthValidAudiences?: string[];
 }
+
+const normalizeAudienceList = (value: unknown) => {
+  if (!Array.isArray(value)) return null;
+
+  const entries = Array.from(
+    new Set(
+      value
+        .filter((entry): entry is string => typeof entry === "string")
+        .map((entry) => entry.trim())
+        .filter(Boolean),
+    ),
+  );
+
+  return entries;
+};
 
 export async function GET(request: NextRequest) {
   const verified = await getVerifiedAdminSession(request);
@@ -31,6 +47,13 @@ export async function GET(request: NextRequest) {
       allowDynamicClientRegistration:
         config?.allowDynamicClientRegistration ??
         process.env.OAUTH_ALLOW_DYNAMIC_CLIENT_REGISTRATION === "true",
+      oauthValidAudiences:
+        config?.oauthValidAudiences ??
+        process.env.OAUTH_VALID_AUDIENCES
+          ?.split(",")
+          .map((value) => value.trim())
+          .filter(Boolean) ??
+        [],
     });
   } catch (error) {
     console.error("Failed to load platform config.", error);
@@ -71,6 +94,14 @@ export async function PUT(request: NextRequest) {
       body.allowDynamicClientRegistration ??
       existingConfig?.allowDynamicClientRegistration ??
       process.env.OAUTH_ALLOW_DYNAMIC_CLIENT_REGISTRATION === "true";
+    const oauthValidAudiences =
+      normalizeAudienceList(body.oauthValidAudiences) ??
+      existingConfig?.oauthValidAudiences ??
+      process.env.OAUTH_VALID_AUDIENCES
+        ?.split(",")
+        .map((value) => value.trim())
+        .filter(Boolean) ??
+      [];
 
     await db
       .insert(platformConfig)
@@ -79,6 +110,7 @@ export async function PUT(request: NextRequest) {
         allowUserClientCreation,
         emailPasswordAuthEnabled,
         allowDynamicClientRegistration,
+        oauthValidAudiences,
       })
       .onConflictDoUpdate({
         target: platformConfig.id,
@@ -86,6 +118,7 @@ export async function PUT(request: NextRequest) {
           allowUserClientCreation,
           emailPasswordAuthEnabled,
           allowDynamicClientRegistration,
+          oauthValidAudiences,
           updatedAt: new Date(),
         },
       });
@@ -94,6 +127,7 @@ export async function PUT(request: NextRequest) {
       allowUserClientCreation,
       emailPasswordAuthEnabled,
       allowDynamicClientRegistration,
+      oauthValidAudiences,
     });
   } catch (error) {
     console.error("Failed to update platform config.", error);

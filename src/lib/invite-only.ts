@@ -174,3 +174,35 @@ export const isEmailPasswordAuthEnabled = async () => {
     return true;
   }
 };
+
+const parseAudienceList = (values: string[] | null | undefined) =>
+  Array.from(
+    new Set(
+      (values ?? [])
+        .map((value) => value.trim())
+        .filter(Boolean),
+    ),
+  );
+
+const parseEnvAudiences = () =>
+  parseAudienceList(process.env.OAUTH_VALID_AUDIENCES?.split(","));
+
+export const getOAuthValidAudiences = async () => {
+  try {
+    const config = await db.query.platformConfig.findFirst({
+      where: eq(platformConfig.id, PLATFORM_CONFIG_ID),
+    });
+
+    const configured = parseAudienceList(config?.oauthValidAudiences);
+    if (configured.length > 0) {
+      return configured;
+    }
+  } catch (err) {
+    console.warn(
+      "Failed to read platform config for OAuth valid audiences.",
+      err,
+    );
+  }
+
+  return parseEnvAudiences();
+};

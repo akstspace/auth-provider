@@ -29,15 +29,12 @@ import {
 import {
   isEmailPasswordAuthEnabled,
   isDynamicClientRegistrationEnabled,
+  getOAuthValidAudiences,
   isUserClientCreationAllowed,
   validateInviteOnlyEmail,
 } from "@/lib/invite-only";
 
 const authBaseUrl = process.env.BETTER_AUTH_URL;
-const oauthValidAudiences = process.env.OAUTH_VALID_AUDIENCES
-  ?.split(",")
-  .map((value) => value.trim())
-  .filter(Boolean);
 const oauthTrustedClientIds = process.env.OAUTH_TRUSTED_CLIENT_IDS
   ?.split(",")
   .map((value) => value.trim())
@@ -57,6 +54,7 @@ const oauthScopes = oauthScopeConfig.allScopeKeys;
 const selfServiceScopeKeys = oauthScopeConfig.selfServiceScopeKeys;
 // Read at startup — like oauthScopeConfig. Changes take effect after a server restart.
 const dynamicClientRegistrationEnabled = await isDynamicClientRegistrationEnabled();
+const oauthValidAudiences = await getOAuthValidAudiences();
 const EMAIL_PASSWORD_AUTH_DISABLED_MESSAGE =
   "Email/password authentication is currently disabled by an administrator.";
 
@@ -228,7 +226,7 @@ export const auth = betterAuth({
 
       // Public issuer/resource metadata
       validAudiences:
-        oauthValidAudiences && oauthValidAudiences.length > 0
+        oauthValidAudiences.length > 0
           ? oauthValidAudiences
           : undefined,
       cachedTrustedClients:
