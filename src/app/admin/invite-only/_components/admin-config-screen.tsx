@@ -495,7 +495,7 @@ export function AdminConfigScreen() {
             value={oauthAudiencesValue}
             onChange={(event) => setOauthAudiencesValue(event.target.value)}
             className="min-h-32 resize-y bg-muted/20 font-mono text-sm leading-relaxed"
-            placeholder={"https://app.chaistudio.space/api/mcp\nhttps://api.example.com"}
+            placeholder={"https://api.example.com"}
             disabled={loading || savingPlatformConfig}
           />
 
